@@ -19,8 +19,20 @@ import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
 
+import org.apache.commons.lang3.SystemUtils;
+
 public class Utility
 {
+	public static String getOSName()
+	{
+		String result = "";
+		
+		if (SystemUtils.IS_OS_WINDOWS) result = "windows";
+		if (SystemUtils.IS_OS_MAC_OSX) result = "macos";
+		if (SystemUtils.IS_OS_LINUX) result = "linux";
+	
+		return result;
+	}
 	
 	public String getFontDisplayName(Font fnt)
 	{

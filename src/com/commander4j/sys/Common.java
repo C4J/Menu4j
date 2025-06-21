@@ -17,6 +17,8 @@ import com.commander4j.tree.JMenuTreeSaver;
 import com.commander4j.tree.JMenuTreeStateSaver;
 
 public class Common {
+	
+	public static String helpURL = "http://wiki.commander4j.com";
 
 	public static final JDBListRenderer renderer_list = new JDBListRenderer();
 	public static final ListFontRenderer renderer_fontlist = new ListFontRenderer();
@@ -28,6 +30,8 @@ public class Common {
 	public static File treeFolderFile = null;
 	public static File treeFolderPath = null;
 	public static File settingsFolderFile = null;
+	
+	public static String osName = "";
 	
 	public static JMenuConfig config;
 	

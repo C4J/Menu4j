@@ -45,6 +45,7 @@ public class JDialogFonts extends JDialog
 	public JDialogFonts(JDialog parent, Font target)
 	{
 		super(parent);
+		setResizable(false);
 		setTitle("Font");
 		setModal(true);
 		setModalityType(ModalityType.APPLICATION_MODAL);

@@ -34,6 +34,7 @@ public class JDialogBranch extends JDialog
 	 */
 	public JDialogBranch(JMenuOption menuOption)
 	{
+		setResizable(false);
 		setTitle("Menu Branch");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModalityType(ModalityType.APPLICATION_MODAL);

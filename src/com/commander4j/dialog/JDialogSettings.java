@@ -76,6 +76,7 @@ public class JDialogSettings extends JDialog
 	 */
 	public JDialogSettings()
 	{
+		setResizable(false);
 		setTitle("Settings");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModalityType(ModalityType.APPLICATION_MODAL);

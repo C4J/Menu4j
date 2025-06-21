@@ -37,6 +37,7 @@ public class JDialogChangePassword extends JDialog
 	 */
 	public JDialogChangePassword(String currpass)
 	{
+		setResizable(false);
 		setTitle("Change Password");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModalityType(ModalityType.APPLICATION_MODAL);

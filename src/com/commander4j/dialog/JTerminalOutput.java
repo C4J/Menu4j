@@ -70,6 +70,7 @@ public class JTerminalOutput extends JFrame
 	public JTerminalOutput()
 	{
 		super("Console Output");
+		setResizable(false);
 
 		Color fg = utils.fromHex(Common.config.getColorTerminalForeground());
 		Color bg = utils.fromHex(Common.config.getColorTerminalBackground());

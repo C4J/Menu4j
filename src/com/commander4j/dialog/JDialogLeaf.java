@@ -98,6 +98,7 @@ public class JDialogLeaf extends JDialog
 	 */
 	public JDialogLeaf(JFrame parent, JMenuOption menuOption)
 	{
+		setResizable(false);
 		setTitle("Menu Leaf");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModalityType(ModalityType.APPLICATION_MODAL);

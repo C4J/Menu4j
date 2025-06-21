@@ -34,6 +34,7 @@ public class JDialogPassword extends JDialog
 	 */
 	public JDialogPassword(String password)
 	{
+		setResizable(false);
 		setTitle("Enter Password");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModalityType(ModalityType.APPLICATION_MODAL);

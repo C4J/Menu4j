@@ -49,6 +49,7 @@ import com.commander4j.renderer.JMenuTreeRenderer;
 import com.commander4j.sys.Common;
 import com.commander4j.tree.JMenuOption;
 import com.commander4j.util.JFileFilterXML;
+import com.commander4j.util.JHelp;
 import com.commander4j.util.Utility;
 
 public class JMenuTree extends JFrame
@@ -84,21 +85,37 @@ public class JMenuTree extends JFrame
 	 */
 	public JMenuTree()
 	{
+		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Common.iconPath + "home.gif"));
 
 		setFrameTitle();
+		
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
 		Utility.setLookAndFeel("Nimbus");
+		
+		Common.osName = Utility.getOSName();
 
 		Common.commandFolder = new File(System.getProperty("user.dir"));
 		Common.iconFolder = new File(System.getProperty("user.dir") + File.separator + "images" + File.separator + "appIcons");
+		
 		Common.settingsFolderFile = new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "config" + File.separator + "config.xml");
+		
+		
+		initFiles(new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "config" + File.separator + "init" + File.separator+ "config.xml"),Common.settingsFolderFile);
+
 		Common.scriptFolder = new File(System.getProperty("user.dir") + File.separator + "script");
 		Common.config = JMenuConfigLoader.load();
+		
+
 		Common.treeFolderFile = new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + Common.config.getTreeFilename());
+
 		Common.treeFolderPath = new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + ".");
 
+		initFiles(new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + "init" + File.separator+ "tree.xml"),Common.treeFolderFile);
+		initFiles(new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + "init" + File.separator+ "tree.xml.state"),new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + "tree.xml.state"));
+	
+		
 		if (Common.config.getPassword().equals("") == false)
 		{
 			boolean success = false;
@@ -448,6 +465,9 @@ public class JMenuTree extends JFrame
 		btnHelp.setFocusable(false);
 		btnHelp.setToolTipText("Help");
 		toolBarSide.add(btnHelp);
+		
+		final JHelp help = new JHelp();
+		help.enableHelpOnButton(btnHelp, "https://wiki.commander4j.com/index.php?title=Menu4j");
 
 		JButton4j btnAbout = new JButton4j(Common.icon_about);
 		btnAbout.setPreferredSize(new Dimension(32, 32));
@@ -892,6 +912,28 @@ public class JMenuTree extends JFrame
 			Common.treeState.saveTreeState();
 			System.exit(0);
 		}
+	}
+	
+	private boolean initFiles(File sourceFile,File destinationFile)
+	{
+		boolean result = true;
+		
+		
+		if (destinationFile.exists()==false)
+		{
+			try
+			{				
+				System.out.println("Copying ["+sourceFile.getAbsoluteFile()+"] to ["+destinationFile.getAbsoluteFile()+"]");
+				org.apache.commons.io.FileUtils.copyFile(sourceFile,destinationFile);	
+	
+			}
+			catch (Exception ex)
+			{
+				result = false;
+			}
+		}
+				
+		return result;
 	}
 
 }
