@@ -39,6 +39,7 @@ import com.commander4j.gui.JButton4j;
 import com.commander4j.gui.JLabel4j_std;
 import com.commander4j.gui.JTextField4j;
 import com.commander4j.sys.Common;
+import com.commander4j.tree.JMenuOption;
 import com.commander4j.util.JFileFilterLOG;
 import com.commander4j.util.Utility;
 
@@ -217,9 +218,15 @@ public class JTerminalOutput extends JFrame
 		}
 	}
 	
+	public void runProcessAndCaptureOutput(JMenuOption menuOption,ProcessBuilder processBuilder)
+	{
+		setTitle("Console Output ["+menuOption.getDescription()+"]");
+		
+		runProcessAndCaptureOutput(processBuilder);
+	}
+	
 	public void runProcessAndCaptureOutput(ProcessBuilder processBuilder)
 	{
-
 		lblStatus.setFont(Common.font_input_large);
 		lblReturnCode.setFont(Common.font_input_large);
 		lblReturnCode.setOpaque(true);

@@ -61,7 +61,7 @@ public class JMenuTree extends JFrame
 	private static int widthadjustment = 0;
 	private static int heightadjustment = 0;
 
-	public String version = "1.55";
+	public String version = "1.57";
 
 	/**
 	 * Launch the application.

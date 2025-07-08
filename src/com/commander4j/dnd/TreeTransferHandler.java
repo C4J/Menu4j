@@ -149,8 +149,8 @@ public class TreeTransferHandler extends TransferHandler
 				// Shared constraints
 				if (draggedNode.isRoot())
 					return false;
-				if (dropParentNode.isRoot() && "leaf".equals(draggedOption.getType()))
-					return false;
+			//	if (dropParentNode.isRoot() && "leaf".equals(draggedOption.getType()))
+			//		return false;
 				if (draggedNode.isNodeDescendant(dropParentNode))
 					return false;
 			}

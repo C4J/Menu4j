@@ -103,7 +103,7 @@ public class Execute
 
 			viewer.setVisible(true);
 
-			viewer.runProcessAndCaptureOutput(processBuilder);
+			viewer.runProcessAndCaptureOutput(menuOption,processBuilder);
 		}
 		else
 		{
