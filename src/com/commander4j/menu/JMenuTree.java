@@ -44,9 +44,12 @@ import com.commander4j.dialog.JDialogPassword;
 import com.commander4j.dialog.JDialogSettings;
 import com.commander4j.dnd.TreeTransferHandler;
 import com.commander4j.gui.JButton4j;
+import com.commander4j.gui.JList4j;
 import com.commander4j.process.Execute;
 import com.commander4j.renderer.JMenuTreeRenderer;
 import com.commander4j.sys.Common;
+import com.commander4j.sys.JDialogLicenses;
+import com.commander4j.sys.JLicenseInfo;
 import com.commander4j.tree.JMenuOption;
 import com.commander4j.util.JFileFilterXML;
 import com.commander4j.util.JHelp;
@@ -60,8 +63,10 @@ public class JMenuTree extends JFrame
 	private final JPanel contentPanel = new JPanel();
 	private static int widthadjustment = 0;
 	private static int heightadjustment = 0;
+	JList4j<JLicenseInfo> list = new JList4j<JLicenseInfo>();
+	
 
-	public String version = "1.57";
+	public static String version = "1.58";
 
 	/**
 	 * Launch the application.
@@ -88,6 +93,7 @@ public class JMenuTree extends JFrame
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Common.iconPath + "home.gif"));
+		
 
 		setFrameTitle();
 		
@@ -473,7 +479,29 @@ public class JMenuTree extends JFrame
 		btnAbout.setPreferredSize(new Dimension(32, 32));
 		btnAbout.setFocusable(false);
 		btnAbout.setToolTipText("About");
-		toolBarSide.add(btnAbout);
+		btnAbout.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+
+			}
+		});
+		
+		
+		JButton4j btnLicense = new JButton4j(Common.icon_license);
+		btnLicense.setPreferredSize(new Dimension(32, 32));
+		btnLicense.setFocusable(false);
+		btnLicense.setToolTipText("Licences");
+		btnLicense.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				JDialogLicenses dl = new  JDialogLicenses(JMenuTree.this);
+				dl.setVisible(true);
+			}
+		});
+
+		toolBarSide.add(btnLicense);
 
 		JButton4j btnClose = new JButton4j(Common.icon_exit);
 		btnClose.setToolTipText("Exit Application");

@@ -133,6 +133,7 @@ public class Common {
 	public final static ImageIcon icon_branchOpen = new ImageIcon(iconPath+"/folder_open.png");
 	public final static ImageIcon icon_branchClose = new ImageIcon(iconPath+"/folder_closed.png");
 	public final static ImageIcon icon_confirm = new ImageIcon(iconPath+"/Icon_Menu4j.png");
+	public final static ImageIcon icon_license = new ImageIcon(iconPath+"/open_source_24x24.png");
 	
 	public static String encryptionKey = "J7675FDFDfhfrreM";
 
