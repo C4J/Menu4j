@@ -38,8 +38,10 @@ import javax.swing.tree.TreeSelectionModel;
 import org.apache.commons.io.FilenameUtils;
 
 import com.commander4j.config.JMenuConfigLoader;
+import com.commander4j.dialog.JDialogAbout;
 import com.commander4j.dialog.JDialogBranch;
 import com.commander4j.dialog.JDialogLeaf;
+import com.commander4j.dialog.JDialogLicenses;
 import com.commander4j.dialog.JDialogPassword;
 import com.commander4j.dialog.JDialogSettings;
 import com.commander4j.dnd.TreeTransferHandler;
@@ -48,7 +50,6 @@ import com.commander4j.gui.JList4j;
 import com.commander4j.process.Execute;
 import com.commander4j.renderer.JMenuTreeRenderer;
 import com.commander4j.sys.Common;
-import com.commander4j.sys.JDialogLicenses;
 import com.commander4j.sys.JLicenseInfo;
 import com.commander4j.tree.JMenuOption;
 import com.commander4j.util.JFileFilterXML;
@@ -66,7 +67,7 @@ public class JMenuTree extends JFrame
 	JList4j<JLicenseInfo> list = new JList4j<JLicenseInfo>();
 	
 
-	public static String version = "1.58";
+	public static String version = "1.60";
 
 	/**
 	 * Launch the application.
@@ -483,10 +484,11 @@ public class JMenuTree extends JFrame
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-
+				JDialogAbout about = new JDialogAbout();
+				about.setVisible(true);
 			}
 		});
-		
+		toolBarSide.add(btnAbout);
 		
 		JButton4j btnLicense = new JButton4j(Common.icon_license);
 		btnLicense.setPreferredSize(new Dimension(32, 32));

@@ -1,4 +1,4 @@
-package com.commander4j.sys;
+package com.commander4j.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -23,6 +23,8 @@ import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
 import com.commander4j.gui.JButton4j;
+import com.commander4j.sys.Common;
+import com.commander4j.sys.JLicenseInfo;
 import com.commander4j.util.Utility;
 
 public class JDialogDisplayLicense extends JDialog
