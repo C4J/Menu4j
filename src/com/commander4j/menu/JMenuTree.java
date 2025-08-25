@@ -67,7 +67,7 @@ public class JMenuTree extends JFrame
 	JList4j<JLicenseInfo> list = new JList4j<JLicenseInfo>();
 	
 
-	public static String version = "1.60";
+	public static String version = "1.62";
 
 	/**
 	 * Launch the application.
@@ -77,7 +77,7 @@ public class JMenuTree extends JFrame
 		try
 		{
 			JMenuTree dialog = new JMenuTree();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 			dialog.setVisible(true);
 		}
 		catch (Exception e)

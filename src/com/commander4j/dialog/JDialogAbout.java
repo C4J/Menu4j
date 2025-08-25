@@ -22,6 +22,7 @@ import com.commander4j.gui.JButton4j;
 import com.commander4j.gui.JLabel4j_std;
 import com.commander4j.sys.Common;
 import com.commander4j.util.Utility;
+
 import java.net.URI;
 import java.awt.Font;
 
@@ -33,6 +34,7 @@ public class JDialogAbout extends JDialog
 	private static int widthadjustment = 0;
 	private static int heightadjustment = 0;
 	private JLabel4j_std jLabelWebPage;
+
 
 	/**
 	 * Create the dialog.
@@ -46,7 +48,7 @@ public class JDialogAbout extends JDialog
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
 		Utility.setLookAndFeel("Nimbus");
 		
-		setBounds(100, 100, 195, 181);
+		setBounds(100, 100, 250, 181);
 		getContentPane().setLayout(null);
 		contentPanel.setBackground(Common.color_app_window);
 		contentPanel.setBounds(0, 0,getWidth(), getHeight());
@@ -58,7 +60,7 @@ public class JDialogAbout extends JDialog
 		lbl_description.setFont(new Font("Arial", Font.ITALIC, 13));
 		lbl_description.setText("David Garratt");
 		lbl_description.setHorizontalAlignment(SwingConstants.CENTER);
-		lbl_description.setBounds(6, 43, 177, 22);
+		lbl_description.setBounds(6, 43, 224, 22);
 		contentPanel.add(lbl_description);
 		
 		{
@@ -70,7 +72,7 @@ public class JDialogAbout extends JDialog
 					dispose();
 				}
 			});
-			okButton.setBounds(46, 103, 103, 30);
+			okButton.setBounds(67, 103, 103, 30);
 			contentPanel.add(okButton);
 			okButton.setActionCommand("OK");
 			getRootPane().setDefaultButton(okButton);
@@ -82,7 +84,7 @@ public class JDialogAbout extends JDialog
 			jLabelWebPage.setHorizontalAlignment(SwingConstants.CENTER);
 			contentPanel.add(jLabelWebPage);
 			jLabelWebPage.setText("https://www.commander4j.com");
-			jLabelWebPage.setBounds(2, 77, 177, 14);
+			jLabelWebPage.setBounds(2, 77, 229, 14);
 			jLabelWebPage.setForeground(new Color(0, 0, 255));
 			jLabelWebPage.addMouseListener(new MouseAdapter()
 			{
@@ -134,7 +136,7 @@ public class JDialogAbout extends JDialog
 				JLabel4j_std lbl_type = new JLabel4j_std("Type");
 				lbl_type.setFont(new Font("Arial", Font.ITALIC, 13));
 				lbl_type.setText("Written by");
-				lbl_type.setBounds(6, 11, 177, 22);
+				lbl_type.setBounds(6, 11, 224, 22);
 				contentPanel.add(lbl_type);
 				lbl_type.setHorizontalAlignment(SwingConstants.CENTER);
 

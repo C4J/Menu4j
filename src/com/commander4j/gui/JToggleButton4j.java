@@ -1,11 +1,9 @@
 package com.commander4j.gui;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JToggleButton;
 
@@ -19,12 +17,17 @@ public class JToggleButton4j extends JToggleButton
 	private void init()
 	{
 		setFont(Common.font_btn);
-		setForeground(Color.black);
-		setOpaque(true);
+		setForeground(Common.color_button_font);
+		setOpaque(false);
 		setBackground(Common.color_button);
-        setContentAreaFilled(false);
-        setFocusPainted(false);
 		
+		setBorderPainted(false);
+		setContentAreaFilled(true);
+		setFocusable(false);
+        setFocusPainted(true);
+        setContentAreaFilled(true);
+
+		// Hover listener
 		addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -32,8 +35,10 @@ public class JToggleButton4j extends JToggleButton
 			{
 				if (isEnabled())
 				{
-					setBackground(Common.color_button);
-					setForeground(Common.color_button_font);
+					setBackground(Common.color_button_hover);
+					setForeground(Common.color_button_font_hover);
+					setFont(Common.font_bold);
+
 				}
 			}
 
@@ -42,6 +47,7 @@ public class JToggleButton4j extends JToggleButton
 			{
 				setBackground(Common.color_button);
 				setForeground(Common.color_button_font);
+				setFont(Common.font_btn);
 			}
 
 			@Override
@@ -49,8 +55,9 @@ public class JToggleButton4j extends JToggleButton
 			{
 				if (isEnabled())
 				{
-					setBackground(Common.color_button);
-					setForeground(Common.color_button_font);
+					setBackground(Common.color_button_hover);
+					setForeground(Common.color_button_font_hover);
+					setFont(Common.font_bold);
 				}
 			}
 
@@ -59,6 +66,7 @@ public class JToggleButton4j extends JToggleButton
 			{
 				setBackground(Common.color_button);
 				setForeground(Common.color_button_font);
+				setFont(Common.font_btn);
 			}
 
 			@Override
@@ -71,27 +79,44 @@ public class JToggleButton4j extends JToggleButton
 				}
 			}
 		});
-		
-		
 	}
 	
 	public JToggleButton4j()
 	{
+		super();
 		init();
 	}
-	
-	public JToggleButton4j(Icon icn)
+
+	public JToggleButton4j(Icon icon)
 	{
-		super(icn);
+		super(icon);
 		init();
 	}
-	
-    @Override
-    protected void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setColor(Common.color_button);
-        g2.fillRect(0, 0, getWidth(), getHeight());
-        g2.dispose();
-        super.paintComponent(g);
-    }
+
+	public JToggleButton4j(String text)
+	{
+		super(text);
+		setToolTipText(text);
+		init();
+	}
+
+	public JToggleButton4j(Action a)
+	{
+		super(a);
+		init();
+	}
+
+	public JToggleButton4j(String text, Icon icon)
+	{
+		super(text, icon);
+		setToolTipText(text);
+		init();
+	}
+
+	@Override
+	public void setText(String text)
+	{
+		super.setText(text);
+		setToolTipText(text);
+	}
 }
