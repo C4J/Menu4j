@@ -9,9 +9,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -29,6 +33,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.commander4j.dnd.JDragDropAppInfo;
+import com.commander4j.dnd.JDragDropPanel;
 import com.commander4j.gui.JButton4j;
 import com.commander4j.gui.JCheckBox4j;
 import com.commander4j.gui.JLabel4j_std;
@@ -37,10 +43,16 @@ import com.commander4j.gui.JMenuItem4j;
 import com.commander4j.gui.JTextField4j;
 import com.commander4j.sys.Common;
 import com.commander4j.tree.JMenuOption;
+import com.commander4j.util.CmdResolver;
+import com.commander4j.util.EXEsIconExtractor;
+import com.commander4j.util.ICNSIconExporter;
 import com.commander4j.util.JFileFilterExecs;
 import com.commander4j.util.JFileFilterImages;
 import com.commander4j.util.JFileFilterXML;
 import com.commander4j.util.Utility;
+import com.commander4j.util.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class JDialogLeaf extends JDialog
 {
@@ -91,13 +103,15 @@ public class JDialogLeaf extends JDialog
 	private JButton4j btnAddParameter = new JButton4j(Common.icon_add);
 	private JButton4j btnDeleteParameter = new JButton4j(Common.icon_delete);
 	private JButton4j btnEditParameter = new JButton4j(Common.icon_edit);
-	private String lastIconFilename = "";
+	private JDragDropPanel DandDpanel;
+	JMenuOption mo;
 
 	/**
 	 * Create the dialog.
 	 */
 	public JDialogLeaf(JFrame parent, JMenuOption menuOption)
 	{
+		this.mo = menuOption;
 		setResizable(false);
 		setTitle("Menu Leaf");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -126,15 +140,32 @@ public class JDialogLeaf extends JDialog
 		textField_description.setText(menuOption.getDescription());
 
 		textField_directory = new JTextField4j();
+		textField_directory.addKeyListener(new KeyAdapter()
+		{
+			@Override
+			public void keyTyped(KeyEvent e)
+			{
+				Common.workingFolder = utils.stringToPath(textField_directory.getText());
+			}
+		});
 		textField_directory.setBounds(134, 133, 562, 22);
 		contentPanel.add(textField_directory);
 		textField_directory.setText(menuOption.getDirectory());
+		Common.workingFolder = utils.stringToPath(menuOption.getDirectory());
 
 		textField_command = new JTextField4j();
+		textField_command.addKeyListener(new KeyAdapter()
+		{
+			@Override
+			public void keyTyped(KeyEvent e)
+			{
+				Common.commandFolder = utils.stringToPath(textField_command.getText());
+			}
+		});
 		textField_command.setBounds(134, 74, 562, 22);
 		contentPanel.add(textField_command);
 		textField_command.setText(menuOption.getCommand());
-		
+
 		textField_tree_filename = new JTextField4j();
 		textField_tree_filename.setBounds(475, 357, 221, 22);
 		contentPanel.add(textField_tree_filename);
@@ -143,13 +174,14 @@ public class JDialogLeaf extends JDialog
 		chckbx_shell_script.setBounds(134, 103, 24, 23);
 		contentPanel.add(chckbx_shell_script);
 		chckbx_shell_script.setSelected(menuOption.isShellScriptRequired());
-		chckbx_link_to_tree_enabled.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		chckbx_link_to_tree_enabled.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
 				menuOption.setLinkToMenuTreeEnabled(chckbx_link_to_tree_enabled.isSelected());
 				setMenuTreeFieldStatus(menuOption);
 			}
 		});
-		
 
 		chckbx_link_to_tree_enabled.setBounds(443, 357, 24, 23);
 		contentPanel.add(chckbx_link_to_tree_enabled);
@@ -158,7 +190,7 @@ public class JDialogLeaf extends JDialog
 		chckbx_terminal_window.setBounds(410, 103, 24, 23);
 		contentPanel.add(chckbx_terminal_window);
 		chckbx_terminal_window.setSelected(menuOption.isTerminalWindowRequired());
-		
+
 		chckbx_confirm_execute.setBounds(613, 103, 24, 23);
 		contentPanel.add(chckbx_confirm_execute);
 		chckbx_confirm_execute.setSelected(menuOption.isConfirmExecute());
@@ -169,6 +201,14 @@ public class JDialogLeaf extends JDialog
 		textField_hint.setText(menuOption.getHint());
 
 		textField_icon = new JTextField4j();
+		textField_icon.addKeyListener(new KeyAdapter()
+		{
+			@Override
+			public void keyTyped(KeyEvent e)
+			{
+				previewIcon();
+			}
+		});
 		textField_icon.getDocument().addDocumentListener(new DocumentListener()
 		{
 			@Override
@@ -234,7 +274,7 @@ public class JDialogLeaf extends JDialog
 		lbl_icon.setHorizontalAlignment(SwingConstants.RIGHT);
 		lbl_icon.setBounds(6, 357, 120, 22);
 		contentPanel.add(lbl_icon);
-		
+
 		lbl_link_to_tree_enabled.setHorizontalAlignment(SwingConstants.RIGHT);
 		lbl_link_to_tree_enabled.setBounds(376, 357, 58, 22);
 		contentPanel.add(lbl_link_to_tree_enabled);
@@ -276,7 +316,7 @@ public class JDialogLeaf extends JDialog
 		contentPanel.add(btnDirectory);
 
 		btnCommand.setToolTipText("Select what to run");
-		//btnCommand.setMargin(new Insets(5,5,5,5));
+		// btnCommand.setMargin(new Insets(5,5,5,5));
 		btnCommand.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -305,8 +345,10 @@ public class JDialogLeaf extends JDialog
 		btnCommand.setBounds(699, 70, 30, 30);
 		btnCommand.setFocusable(false);
 		contentPanel.add(btnCommand);
-		btnLink.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		btnLink.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
 				File linkXML = selectLoadTreeXML();
 				if (linkXML != null)
 				{
@@ -315,7 +357,7 @@ public class JDialogLeaf extends JDialog
 				}
 			}
 		});
-		
+
 		btnLink.setToolTipText("Link this leaf to another JMenuTree");
 		btnLink.setBounds(699, 351, 30, 30);
 		btnLink.setFocusable(false);
@@ -534,15 +576,131 @@ public class JDialogLeaf extends JDialog
 		lbl_terminal.setHorizontalAlignment(SwingConstants.RIGHT);
 		lbl_terminal.setBounds(248, 103, 155, 22);
 		contentPanel.add(lbl_terminal);
-		
+
 		JLabel4j_std lbl_confirm_execute = new JLabel4j_std("Confirm Execute");
 		lbl_confirm_execute.setText("Confirm Execute");
 		lbl_confirm_execute.setHorizontalAlignment(SwingConstants.RIGHT);
 		lbl_confirm_execute.setBounds(446, 104, 155, 22);
 		contentPanel.add(lbl_confirm_execute);
-		
+
+		// if (utils.isMac())
+		// {
+		DandDpanel = new JDragDropPanel();
+		DandDpanel.setLocation(283, 10);
+		contentPanel.add(DandDpanel);
+
+		DandDpanel.setDropListener(info -> {
+
+			if (info.bundleType.equals(JDragDropAppInfo.Type_appBundle))
+			{
+
+				try
+				{
+					ICNSIconExporter xp = new ICNSIconExporter();
+					xp.exportAppIconPng(info, Paths.get("." + File.separator + "images" + File.separator + "appIcons"), 24);
+					textField_icon.setText(DandDpanel.getIconName_PNG());
+				}
+				catch (IOException e)
+				{
+					textField_icon.setText("");
+				}
+
+				textField_description.setText(DandDpanel.getBundleName());
+				textField_directory.setText(DandDpanel.getWorkingDirectory());
+
+				int foundit = paramModel.indexOf(DandDpanel.getBundleName());
+
+				if (foundit == -1)
+				{
+					paramModel.clear();
+					paramModel.add(0, DandDpanel.getBundleName() + ".app");
+				}
+
+				textField_command.setText("open");
+
+				chckbx_terminal_window.setSelected(false);
+
+				chckbx_shell_script.setSelected(true);
+
+				chckbx_confirm_execute.setSelected(true);
+
+			}
+
+			if (info.bundleType.equals(JDragDropAppInfo.Type_bashScript))
+			{
+				textField_icon.setText("terminal_24x24.png");
+
+				textField_description.setText("Bash Script : " + DandDpanel.getBundleName());
+				textField_command.setText(DandDpanel.getExecutableFullPath());
+				textField_directory.setText(DandDpanel.getWorkingDirectory());
+
+				chckbx_terminal_window.setSelected(true);
+
+				chckbx_shell_script.setSelected(true);
+
+				chckbx_confirm_execute.setSelected(true);
+			}
+
+			if (info.bundleType.equals(JDragDropAppInfo.Type_windowsEXE))
+			{
+				BufferedImage icon = EXEsIconExtractor.exportAppIconPng(DandDpanel.getExecutableFullPath(), 24);
+
+				if (icon != null)
+				{
+					try
+					{
+						File outputfile = new File("."+File.separator+"images"+File.separator+"appIcons"+File.separator +  DandDpanel.getBundleId() + ".png");
+						ImageIO.write(icon, "png", outputfile);
+					}
+					catch (IOException e)
+					{
+					}
+				}
+
+				textField_icon.setText(DandDpanel.getIconName_PNG());
+
+
+
+				textField_command.setText(CmdResolver.findCmdExe().toString());
+
+				textField_directory.setText(DandDpanel.getWorkingDirectory());
+
+				chckbx_terminal_window.setSelected(false);
+
+				chckbx_shell_script.setSelected(false);
+
+				chckbx_confirm_execute.setSelected(true);
+
+				paramModel.clear();
+
+				paramModel.add(0, "/c");
+				paramModel.add(1, "start");
+				paramModel.add(2, "\"\"");
+				paramModel.add(3, "/D");
+				paramModel.add(4, DandDpanel.getWorkingDirectory());
+				paramModel.add(5, DandDpanel.getExecutableName());
+				
+				
+				String desc = WinExeMetadata.getProductName(info.bundlePath);
+				if (!desc.isEmpty())
+				{
+					textField_description.setText(desc);
+				}
+				else
+				{
+					textField_description.setText("Windows Executable : " + DandDpanel.getBundleName());
+				}
+				
+
+			}
+
+			previewIcon();
+
+		});
+		// }
+
 		setMenuTreeFieldStatus(menuOption);
-		
+
 		widthadjustment = Utility.getOSWidthAdjustment();
 		heightadjustment = Utility.getOSHeightAdjustment();
 
@@ -613,7 +771,7 @@ public class JDialogLeaf extends JDialog
 
 		return result;
 	}
-	
+
 	private void setMenuTreeFieldStatus(JMenuOption menuOption)
 	{
 		textField_tree_filename.setEnabled(menuOption.isLinkToMenuTreeEnabled());
@@ -626,21 +784,21 @@ public class JDialogLeaf extends JDialog
 		textField_redirectIn.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
 		textField_redirectOut.setEditable(!menuOption.isLinkToMenuTreeEnabled());
 		textField_redirectOut.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
-		
+
 		chckbx_shell_script.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
 		chckbx_terminal_window.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
 		chckbx_confirm_execute.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
-		
+
 		btnAddParameter.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
 		btnDeleteParameter.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
 		btnEditParameter.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
-		
+
 		btnDirectoryParameter.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
 		btnCommandParameter.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
-		
+
 		btnRedirectInput.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
 		btnRedirectOutput.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
-		
+
 		paramList.setEnabled(!menuOption.isLinkToMenuTreeEnabled());
 	}
 
@@ -728,15 +886,20 @@ public class JDialogLeaf extends JDialog
 	private void previewIcon()
 	{
 		ImageIcon result;
-		
-		String filename = Common.iconPath + textField_icon.getText();
-		
-		if (lastIconFilename.equals(filename) == false)
-		{
-			lastIconFilename = filename;
-			result = new ImageIcon(filename);
+
+		String filename = textField_icon.getText();
+
+			System.out.println("previewIcon="+filename);
+
+			result = new ImageIcon(Common.iconPath +filename);
+			
+			System.out.println("ImageIcon="+Common.iconPath +filename);
+			
 			lbl_icon_preview.setIcon(result);
-		}
+			lbl_icon_preview.invalidate();
+			lbl_icon_preview.revalidate();
+			lbl_icon_preview.repaint();
+
 	}
 
 	private void addRecord()
@@ -810,7 +973,7 @@ public class JDialogLeaf extends JDialog
 
 		});
 	}
-	
+
 	private File selectLoadTreeXML()
 	{
 		File result = null;

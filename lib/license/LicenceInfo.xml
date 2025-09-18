@@ -16,6 +16,13 @@
         	<type>Apache Licence 2.0</type>
         </library>
         
+        
+        <library>
+            <description>Apache Commons Lang</description>
+            <version>3.12.0</version>
+            <type>Apache Licence 2.0</type>
+        </library>
+        
         <library>
         	<description>Apache Commons Codec</description>
         	<version>1.18</version>
@@ -28,7 +35,36 @@
             <type>Apache Licence 2.0</type>
         </library>
         
-                                
+        <library>
+            <description>ImageIO Core</description>
+            <version>3.12.0</version>
+            <type>BSD 3-Clause</type>
+        </library>
+        
+        <library>
+            <description>ImageIO ICNS</description>
+            <version>3.12.0</version>
+            <type>BSD 3-Clause</type>
+        </library> 
+        
+        <library>
+            <description>DD Plist</description>
+            <version>1.28</version>
+            <type>MIT License</type>
+        </library>
+                       
+        <library>
+            <description>Java Native Access</description>
+            <version>5.17.0</version>
+            <type>Apache Licence 2.0</type>
+        </library>
+        
+        <library>
+            <description>Java Native Access Platform</description>
+            <version>5.17.0</version>
+            <type>Apache Licence 2.0</type>
+        </library>
+        
     </libraries>
 
     <licenses>
@@ -43,6 +79,15 @@
             <filename>Apache Licence Version 2.0.txt</filename>
         </license>
 
+        <license>
+            <type>BSD 3-Clause</type>
+            <filename>3-Clause BSD License.txt</filename>
+        </license>
+        
+        <license>
+            <type>MIT License</type>
+            <filename>MIT Licence.txt</filename>
+        </license>
                 
     </licenses>
 

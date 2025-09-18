@@ -67,7 +67,7 @@ public class JMenuTree extends JFrame
 	JList4j<JLicenseInfo> list = new JList4j<JLicenseInfo>();
 	
 
-	public static String version = "1.62";
+	public static String version = "1.70";
 
 	/**
 	 * Launch the application.

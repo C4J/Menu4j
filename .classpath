@@ -11,5 +11,13 @@
 	<classpathentry kind="lib" path="lib/commons-io-2.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.18.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.17.0.jar"/>
+	<classpathentry kind="lib" path="lib/common-image-3.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/common-io-3.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/common-lang-3.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/dd-plist-1.28.jar"/>
+	<classpathentry kind="lib" path="lib/imageio-core-3.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/imageio-icns-3.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/jna-5.17.0.jar"/>
+	<classpathentry kind="lib" path="lib/jna-platform-5.17.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

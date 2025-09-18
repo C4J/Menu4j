@@ -250,6 +250,10 @@ public class JMenuOption
 
 	public void setIcon(String icon)
 	{
+		if (icon.contains(Common.iconPath))
+		{
+		System.out.println("setIcon = "+icon);
+		}
 		this.icon = icon;
 	}
 	
