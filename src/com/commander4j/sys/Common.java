@@ -98,6 +98,8 @@ public class Common {
 	public final static Color color_textfield_background_disabled = new Color(241, 241, 241);
 	
 	public static String iconPath = "."+File.separator+"images"+File.separator+"appIcons"+File.separator;
+	
+	public final static ImageIcon icon_left_arrow = new ImageIcon(iconPath+"left_arrow_24x24.png");
 	public final static ImageIcon icon_menuStructure = new ImageIcon(iconPath+"folder_tree.png");
 	public final static ImageIcon icon_select_folder = new ImageIcon(iconPath+"/select_folder_24x24.png");
 	public final static ImageIcon icon_select_file = new ImageIcon(iconPath+"/select_file_24x24.png");

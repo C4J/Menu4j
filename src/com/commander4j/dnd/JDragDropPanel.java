@@ -160,33 +160,55 @@ public class JDragDropPanel extends JPanel {
                 	//APP BUNDLE
                     if (f.isDirectory() && f.getName().toLowerCase().endsWith(".app")) {
                         try {
-                            JDragDropAppInfo info = JDragDropAppInfo.fromBundle(f.toPath());
+                            JDragDropAppInfo info = JDragDropAppInfo.from_app(f.toPath());
                             setAppInfo(info);
                             return true; // take first valid .app
                         } catch (Exception ex) {
-                            showError("Failed to read bundle:\n" + f + "\n\n" + ex.getMessage());
+                            showError("Failed to read app bundle:\n" + f + "\n\n" + ex.getMessage());
                         }
                     }
                     
                     //BASH SCRIPT
                     if (!f.isDirectory() && f.getName().toLowerCase().endsWith(".sh")) {
                         try {
-                            JDragDropAppInfo info = JDragDropAppInfo.fromScript(f.toPath());
+                            JDragDropAppInfo info = JDragDropAppInfo.from_sh(f.toPath());
                             setAppInfo(info);
                             return true; // take first valid .app
                         } catch (Exception ex) {
-                            showError("Failed to read script:\n" + f + "\n\n" + ex.getMessage());
+                            showError("Failed to read sh:\n" + f + "\n\n" + ex.getMessage());
                         }
                     }
                     
                     //WINDOWS EXE
                     if (!f.isDirectory() && f.getName().toLowerCase().endsWith(".exe")) {
                         try {
-                            JDragDropAppInfo info = JDragDropAppInfo.fromEXE(f.toPath());
+                            JDragDropAppInfo info = JDragDropAppInfo.from_exe(f.toPath());
                             setAppInfo(info);
                             return true; // take first valid .app
                         } catch (Exception ex) {
                             showError("Failed to read exe:\n" + f + "\n\n" + ex.getMessage());
+                        }
+                    }
+                    
+                    //WINDOWS CMD
+                    if (!f.isDirectory() && f.getName().toLowerCase().endsWith(".cmd")) {
+                        try {
+                            JDragDropAppInfo info = JDragDropAppInfo.from_cmd(f.toPath());
+                            setAppInfo(info);
+                            return true; // take first valid .app
+                        } catch (Exception ex) {
+                            showError("Failed to read cmd:\n" + f + "\n\n" + ex.getMessage());
+                        }
+                    }
+                    
+                    //WINDOWS BAT
+                    if (!f.isDirectory() && f.getName().toLowerCase().endsWith(".bat")) {
+                        try {
+                            JDragDropAppInfo info = JDragDropAppInfo.from_bat(f.toPath());
+                            setAppInfo(info);
+                            return true; // take first valid .app
+                        } catch (Exception ex) {
+                            showError("Failed to read bat:\n" + f + "\n\n" + ex.getMessage());
                         }
                     }
                 }

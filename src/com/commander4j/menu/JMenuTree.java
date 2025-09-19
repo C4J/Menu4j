@@ -17,6 +17,7 @@ import java.util.Enumeration;
 
 import javax.swing.BorderFactory;
 import javax.swing.DropMode;
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -26,6 +27,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -65,9 +67,9 @@ public class JMenuTree extends JFrame
 	private static int widthadjustment = 0;
 	private static int heightadjustment = 0;
 	JList4j<JLicenseInfo> list = new JList4j<JLicenseInfo>();
-	
+	DefaultMutableTreeNode parentNode;
 
-	public static String version = "1.70";
+	public static String version = "1.75";
 
 	/**
 	 * Launch the application.
@@ -648,7 +650,8 @@ public class JMenuTree extends JFrame
 					boolean confirm = true;
 					if (nodeInfo.isConfirmExecute())
 					{
-						int question = JOptionPane.showConfirmDialog(JMenuTree.this, "Execute\n\n" + nodeInfo.getDescription() + " ?", "Confirm", JOptionPane.YES_NO_OPTION, 0, Common.icon_confirm);
+						ImageIcon icn = nodeInfo.getImageIcon();
+						int question = JOptionPane.showConfirmDialog(JMenuTree.this, "Execute '" + nodeInfo.getDescription() + "' ?", "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, icn);
 						if (question == 0)
 						{
 							confirm = true;
@@ -695,67 +698,92 @@ public class JMenuTree extends JFrame
 
 	private void addNode(String type)
 	{
-		DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) Common.tree.getLastSelectedPathComponent();
-		if (selectedNode == null)
-		{
-			return;
-		}
+	    DefaultMutableTreeNode selectedNode =
+	        (DefaultMutableTreeNode) Common.tree.getLastSelectedPathComponent();
+	    if (selectedNode == null) {
+	        return;
+	    }
 
-		DefaultTreeModel model = (DefaultTreeModel) Common.tree.getModel();
+	    DefaultTreeModel model = (DefaultTreeModel) Common.tree.getModel();
+	    parentNode = selectedNode;
 
-		DefaultMutableTreeNode parentNode = selectedNode;
+	    JMenuOption selectedMenuOption = (JMenuOption) selectedNode.getUserObject();
+	    if (selectedMenuOption.getType().equalsIgnoreCase("leaf")) {
+	        parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
+	        if (parentNode == null) {
+	            return;
+	        }
+	    }
 
-		JMenuOption selectedMenuOption = (JMenuOption) selectedNode.getUserObject();
+	    JMenuOption newMenuOption = new JMenuOption();
+	    newMenuOption.setType(type);
+	    newMenuOption.setDescription("New " + type);
 
-		if (selectedMenuOption.getType().equalsIgnoreCase("leaf"))
-		{
+	    DefaultMutableTreeNode newBranchNode = new DefaultMutableTreeNode(newMenuOption);
 
-			parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
-			if (parentNode == null)
-			{
-				return;
-			}
-		}
+	    // Insert
+	    model.insertNodeInto(newBranchNode, parentNode, parentNode.getChildCount());
 
-		JMenuOption newMenuOption = new JMenuOption();
-		newMenuOption.setType(type);
-		newMenuOption.setDescription("New " + type);
+	    // Select + bring into view (after the model updates)
+	    SwingUtilities.invokeLater(() -> {
+	        TreePath parentPath = new TreePath(parentNode.getPath());
+	        TreePath newPath = new TreePath(newBranchNode.getPath());
 
-		DefaultMutableTreeNode newBranchNode = new DefaultMutableTreeNode(newMenuOption);
+	        // Ensure parent is expanded so the new child is visible
+	        Common.tree.expandPath(parentPath);
 
-		model.insertNodeInto(newBranchNode, parentNode, parentNode.getChildCount());
-		Common.tree.scrollPathToVisible(new TreePath(newBranchNode.getPath()));
+	        // Select the newly added node
+	        Common.tree.setSelectionPath(newPath);
+	        Common.tree.scrollPathToVisible(newPath);
+	        Common.tree.requestFocusInWindow();
+
+	        // Optional: start in-place editing if your tree is editable
+			editNode();
+	    });
 	}
+
 
 	private void duplicateNode()
 	{
-		DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) Common.tree.getLastSelectedPathComponent();
+	    DefaultMutableTreeNode selectedNode =
+	        (DefaultMutableTreeNode) Common.tree.getLastSelectedPathComponent();
 
-		if (selectedNode != null)
-		{
+	    if (selectedNode == null) {
+	        return;
+	    }
 
-			DefaultTreeModel model = (DefaultTreeModel) Common.tree.getModel();
+	    DefaultTreeModel model = (DefaultTreeModel) Common.tree.getModel();
+	    JMenuOption selectedMenuOption = (JMenuOption) selectedNode.getUserObject();
 
-			JMenuOption selectedMenuOption = (JMenuOption) selectedNode.getUserObject();
+	    DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
+	    if (parentNode == null) {
+	        return;
+	    }
 
-			DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
+	    JMenuOption newMenuOption = new JMenuOption();
+	    newMenuOption.clone(selectedMenuOption);
+	    newMenuOption.setDescription(selectedMenuOption.getDescription() + " Copy");
 
-			if (parentNode == null)
-			{
-				return;
-			}
+	    DefaultMutableTreeNode newBranchNode = new DefaultMutableTreeNode(newMenuOption);
 
-			JMenuOption newMenuOption = new JMenuOption();
+	    // Insert the duplicate (at end of parent’s children)
+	    // If you prefer it immediately after the original, use:
+	    // int insertIndex = parentNode.getIndex(selectedNode) + 1;
+	    // model.insertNodeInto(newBranchNode, parentNode, insertIndex);
+	    model.insertNodeInto(newBranchNode, parentNode, parentNode.getChildCount());
 
-			newMenuOption.clone(selectedMenuOption);
-			newMenuOption.setDescription(selectedMenuOption.getDescription() + " Copy");
+	    // Select + bring into view (after the model updates)
+	    SwingUtilities.invokeLater(() -> {
+	        TreePath parentPath = new TreePath(parentNode.getPath());
+	        TreePath newPath = new TreePath(newBranchNode.getPath());
 
-			DefaultMutableTreeNode newBranchNode = new DefaultMutableTreeNode(newMenuOption);
+	        Common.tree.expandPath(parentPath);
+	        Common.tree.setSelectionPath(newPath);
+	        Common.tree.scrollPathToVisible(newPath);
+	        Common.tree.requestFocusInWindow();
 
-			model.insertNodeInto(newBranchNode, parentNode, parentNode.getChildCount());
-
-			Common.tree.scrollPathToVisible(new TreePath(newBranchNode.getPath()));
-		}
+			editNode();
+	    });
 	}
 
 	private void editNode()
@@ -799,8 +827,9 @@ public class JMenuTree extends JFrame
 		{
 			return; // No selection, nothing to delete
 		}
-
 		DefaultTreeModel model = (DefaultTreeModel) Common.tree.getModel();
+
+		JMenuOption nodeInfo = (JMenuOption) (selectedNode.getUserObject());
 
 		// Optional: Prevent deleting the root node
 		if (selectedNode.isRoot())
@@ -810,7 +839,9 @@ public class JMenuTree extends JFrame
 		}
 
 		// Ask for confirmation
-		int result = JOptionPane.showConfirmDialog(Common.tree, "Are you sure you want to delete this item?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+		java.awt.Toolkit.getDefaultToolkit().beep();
+		ImageIcon icn = nodeInfo.getImageIcon();
+		int result = JOptionPane.showConfirmDialog(JMenuTree.this, "Are you sure you want to delete '"+nodeInfo.getDescription()+"'", "Confirm Delete", JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE,icn);
 
 		if (result == JOptionPane.YES_OPTION)
 		{

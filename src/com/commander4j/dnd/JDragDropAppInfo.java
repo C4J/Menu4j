@@ -20,6 +20,8 @@ public final class JDragDropAppInfo
 	public static String Type_appBundle  = "macosBundle";
 	public static String Type_bashScript = "bashScript";
 	public static String Type_windowsEXE = "windowsEXE";
+	public static String Type_windowsCMD = "windowsCMD";
+	public static String Type_windowsBAT = "windowsBAT";
 
 	public enum IconSource
 	{
@@ -52,7 +54,7 @@ public final class JDragDropAppInfo
 
 	}
 
-	public static JDragDropAppInfo fromBundle(Path bundle) throws Exception
+	public static JDragDropAppInfo from_app(Path bundle) throws Exception
 	{
 		Objects.requireNonNull(bundle, "bundle");
 		
@@ -107,9 +109,9 @@ public final class JDragDropAppInfo
 		return new JDragDropAppInfo(Type_appBundle, bundle, bundleId, name, execName, execPath, iconPath, iconPath != null ? IconSource.HEURISTIC_RESOURCES_SCAN : IconSource.NONE);
 	}
 
-	public static JDragDropAppInfo fromScript(Path bundle) throws Exception
+	public static JDragDropAppInfo from_sh(Path bundle) throws Exception
 	{
-		Objects.requireNonNull(bundle, "script");
+		Objects.requireNonNull(bundle, "sh");
 		
 		if (Files.isDirectory(bundle) || !bundle.toString().toLowerCase(Locale.ROOT).endsWith(".sh"))
 		{
@@ -127,7 +129,47 @@ public final class JDragDropAppInfo
 		return new JDragDropAppInfo(Type_bashScript, bundle, bundleId, name, execName, execPath, iconPath, iconPath != null ? IconSource.HEURISTIC_RESOURCES_SCAN : IconSource.NONE);
 	}
 	
-	public static JDragDropAppInfo fromEXE(Path bundle) throws Exception
+	public static JDragDropAppInfo from_cmd(Path bundle) throws Exception
+	{
+		Objects.requireNonNull(bundle, "cmd");
+		
+		if (Files.isDirectory(bundle) || !bundle.toString().toLowerCase(Locale.ROOT).endsWith(".cmd"))
+		{
+			throw new IllegalArgumentException("Not an cmd file: " + bundle);
+		}
+
+		String bundleId = bundle.getFileName().toString();
+		String name = bundle.getFileName().toString();
+
+		String execName = bundle.getFileName().toString();
+		Path execPath = bundle.getParent();
+
+		Path iconPath = Paths.get("."+File.separator+"images"+File.separator+"appIcons"+File.separator+"terminal_24x24.png");
+
+		return new JDragDropAppInfo(Type_windowsCMD, bundle, bundleId, name, execName, execPath, iconPath, iconPath != null ? IconSource.HEURISTIC_RESOURCES_SCAN : IconSource.NONE);
+	}
+	
+	public static JDragDropAppInfo from_bat(Path bundle) throws Exception
+	{
+		Objects.requireNonNull(bundle, "bat");
+		
+		if (Files.isDirectory(bundle) || !bundle.toString().toLowerCase(Locale.ROOT).endsWith(".bat"))
+		{
+			throw new IllegalArgumentException("Not an bat file: " + bundle);
+		}
+
+		String bundleId = bundle.getFileName().toString();
+		String name = bundle.getFileName().toString();
+
+		String execName = bundle.getFileName().toString();
+		Path execPath = bundle.getParent();
+
+		Path iconPath = Paths.get("."+File.separator+"images"+File.separator+"appIcons"+File.separator+"terminal_24x24.png");
+
+		return new JDragDropAppInfo(Type_windowsBAT, bundle, bundleId, name, execName, execPath, iconPath, iconPath != null ? IconSource.HEURISTIC_RESOURCES_SCAN : IconSource.NONE);
+	}
+	
+	public static JDragDropAppInfo from_exe(Path bundle) throws Exception
 	{
 		Objects.requireNonNull(bundle, "exe");
 		

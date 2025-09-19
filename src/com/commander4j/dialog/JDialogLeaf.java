@@ -78,6 +78,7 @@ public class JDialogLeaf extends JDialog
 	private static int heightadjustment = 0;
 	private Utility utils = new Utility();
 	private JLabel4j_std lbl_type = new JLabel4j_std("Type");
+	private JLabel4j_std lbl_dnd_help = new JLabel4j_std("Drag and Drop target here");
 	private JLabel4j_std lbl_description = new JLabel4j_std("Description");
 	private JLabel4j_std lbl_directory = new JLabel4j_std("Directory");
 	private JLabel4j_std lbl_parameters = new JLabel4j_std("Parameters");
@@ -246,6 +247,10 @@ public class JDialogLeaf extends JDialog
 		lbl_type.setHorizontalAlignment(SwingConstants.RIGHT);
 		lbl_type.setBounds(6, 12, 120, 22);
 		contentPanel.add(lbl_type);
+		
+		lbl_dnd_help.setBounds(406, 12, 200, 22);
+		lbl_dnd_help.setIcon(Common.icon_left_arrow);
+		contentPanel.add(lbl_dnd_help);
 
 		lbl_description.setHorizontalAlignment(SwingConstants.RIGHT);
 		lbl_description.setBounds(6, 43, 120, 22);
@@ -586,7 +591,7 @@ public class JDialogLeaf extends JDialog
 		// if (utils.isMac())
 		// {
 		DandDpanel = new JDragDropPanel();
-		DandDpanel.setLocation(283, 10);
+		DandDpanel.setLocation(283, 8);
 		contentPanel.add(DandDpanel);
 
 		DandDpanel.setDropListener(info -> {
@@ -659,8 +664,6 @@ public class JDialogLeaf extends JDialog
 
 				textField_icon.setText(DandDpanel.getIconName_PNG());
 
-
-
 				textField_command.setText(CmdResolver.findCmdExe().toString());
 
 				textField_directory.setText(DandDpanel.getWorkingDirectory());
@@ -690,8 +693,58 @@ public class JDialogLeaf extends JDialog
 				{
 					textField_description.setText("Windows Executable : " + DandDpanel.getBundleName());
 				}
-				
+			}
+			
+			if (info.bundleType.equals(JDragDropAppInfo.Type_windowsCMD))
+			{
+				textField_icon.setText("terminal_24x24.png");
 
+				textField_command.setText(CmdResolver.findCmdExe().toString());
+
+				textField_directory.setText(DandDpanel.getWorkingDirectory());
+
+				chckbx_terminal_window.setSelected(false);
+
+				chckbx_shell_script.setSelected(false);
+
+				chckbx_confirm_execute.setSelected(true);
+
+				paramModel.clear();
+
+				paramModel.add(0, "/c");
+				paramModel.add(1, "start");
+				paramModel.add(2, "\"\"");
+				paramModel.add(3, "/D");
+				paramModel.add(4, DandDpanel.getWorkingDirectory());
+				paramModel.add(5, DandDpanel.getExecutableName());
+				
+				textField_description.setText("Windows Command : " + DandDpanel.getBundleName());
+			}
+			
+			if (info.bundleType.equals(JDragDropAppInfo.Type_windowsBAT))
+			{
+				textField_icon.setText("terminal_24x24.png");
+
+				textField_command.setText(CmdResolver.findCmdExe().toString());
+
+				textField_directory.setText(DandDpanel.getWorkingDirectory());
+
+				chckbx_terminal_window.setSelected(false);
+
+				chckbx_shell_script.setSelected(false);
+
+				chckbx_confirm_execute.setSelected(true);
+
+				paramModel.clear();
+
+				paramModel.add(0, "/c");
+				paramModel.add(1, "start");
+				paramModel.add(2, "\"\"");
+				paramModel.add(3, "/D");
+				paramModel.add(4, DandDpanel.getWorkingDirectory());
+				paramModel.add(5, DandDpanel.getExecutableName());
+				
+				textField_description.setText("Windows Batch File : " + DandDpanel.getBundleName());
 			}
 
 			previewIcon();
