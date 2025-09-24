@@ -52,11 +52,23 @@ public class JMenuConfigSaver
 
 			// Colors
 			Element colors = doc.createElement("colors");
-			Element color = doc.createElement("color");
-			color.setAttribute("id", "terminal");
-			color.setAttribute("foreground", Common.config.getColorTerminalForeground());
-			color.setAttribute("background", Common.config.getColorTerminalBackground());
-			colors.appendChild(color);
+			
+			Element colorTerminal = doc.createElement("color");
+			colorTerminal.setAttribute("id", "terminal");
+			colorTerminal.setAttribute("foreground", Common.config.getColorTerminalForeground());
+			colorTerminal.setAttribute("background", Common.config.getColorTerminalBackground());
+			colors.appendChild(colorTerminal);
+			
+			Element colorLeaf = doc.createElement("color");
+			colorLeaf.setAttribute("id", "leaf");
+			colorLeaf.setAttribute("foreground", Common.config.getColorLeafForeground());
+			colors.appendChild(colorLeaf);
+			
+			Element colorBranch = doc.createElement("color");
+			colorBranch.setAttribute("id", "branch");
+			colorBranch.setAttribute("foreground", Common.config.getColorBranchForeground());
+			colors.appendChild(colorBranch);
+			
 			rootElement.appendChild(colors);
 
 			// Environment

@@ -2,10 +2,13 @@ package com.commander4j.menu;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -68,8 +71,11 @@ public class JMenuTree extends JFrame
 	private static int heightadjustment = 0;
 	JList4j<JLicenseInfo> list = new JList4j<JLicenseInfo>();
 	DefaultMutableTreeNode parentNode;
+	TrayIcon trayIcon;
+	Image trayIconImage;
+	Utility utils = new Utility();
 
-	public static String version = "1.75";
+	public static String version = "1.81";
 
 	/**
 	 * Launch the application.
@@ -96,35 +102,32 @@ public class JMenuTree extends JFrame
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Common.iconPath + "home.gif"));
-		
 
 		setFrameTitle();
-		
+
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
 		Utility.setLookAndFeel("Nimbus");
-		
+
 		Common.osName = Utility.getOSName();
 
 		Common.commandFolder = new File(System.getProperty("user.dir"));
 		Common.iconFolder = new File(System.getProperty("user.dir") + File.separator + "images" + File.separator + "appIcons");
-		
+
 		Common.settingsFolderFile = new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "config" + File.separator + "config.xml");
-		
-		
-		initFiles(new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "config" + File.separator + "init" + File.separator+ "config.xml"),Common.settingsFolderFile);
+
+		initFiles(new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "config" + File.separator + "init" + File.separator + "config.xml"), Common.settingsFolderFile);
 
 		Common.scriptFolder = new File(System.getProperty("user.dir") + File.separator + "script");
 		Common.config = JMenuConfigLoader.load();
-		
 
 		Common.treeFolderFile = new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + Common.config.getTreeFilename());
 
 		Common.treeFolderPath = new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + ".");
 
-		initFiles(new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + "init" + File.separator+ "tree.xml"),Common.treeFolderFile);
-		initFiles(new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + "init" + File.separator+ "tree.xml.state"),new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + "tree.xml.state"));
-	
-		
+		initFiles(new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + "init" + File.separator + "tree.xml"), Common.treeFolderFile);
+		initFiles(new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + "init" + File.separator + "tree.xml.state"),
+				new File(System.getProperty("user.dir") + File.separator + "xml" + File.separator + "tree" + File.separator + "tree.xml.state"));
+
 		if (Common.config.getPassword().equals("") == false)
 		{
 			boolean success = false;
@@ -140,12 +143,12 @@ public class JMenuTree extends JFrame
 
 				if (password.action.equals("OK"))
 				{
-				
-				if (password.enteredPassword.equals(Common.config.getPassword()))
-				{
-					success = true;
-					break;
-				}
+
+					if (password.enteredPassword.equals(Common.config.getPassword()))
+					{
+						success = true;
+						break;
+					}
 				}
 				else
 				{
@@ -306,8 +309,7 @@ public class JMenuTree extends JFrame
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				JDialogSettings settings = new JDialogSettings();
-				settings.setVisible(true);
+				settings();
 			}
 		});
 
@@ -359,16 +361,7 @@ public class JMenuTree extends JFrame
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				saveChanges();
-				File saveXML = selectLoadTreeXML();
-				if (saveXML != null)
-				{
-					Common.treeState.saveTreeState();
-					Common.treeFolderFile = saveXML;
-					Common.config.setTreeFilename(Common.treeFolderFile.getName());
-					Common.treeLoader.loadTree(JMenuTree.this);
-					Common.configSaver.save();
-				}
+				openTree();
 
 			}
 		});
@@ -393,14 +386,9 @@ public class JMenuTree extends JFrame
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				File saveXML = selectSaveTreeXML();
 
-				if (saveXML != null)
-				{
-					Common.treeFolderFile = saveXML;
-					Common.treeSaver.saveTree(JMenuTree.this);
-					setFrameTitle();
-				}
+				saveTree();
+
 			}
 		});
 
@@ -474,7 +462,7 @@ public class JMenuTree extends JFrame
 		btnHelp.setFocusable(false);
 		btnHelp.setToolTipText("Help");
 		toolBarSide.add(btnHelp);
-		
+
 		final JHelp help = new JHelp();
 		help.enableHelpOnButton(btnHelp, "https://wiki.commander4j.com/index.php?title=Menu4j");
 
@@ -491,7 +479,7 @@ public class JMenuTree extends JFrame
 			}
 		});
 		toolBarSide.add(btnAbout);
-		
+
 		JButton4j btnLicense = new JButton4j(Common.icon_license);
 		btnLicense.setPreferredSize(new Dimension(32, 32));
 		btnLicense.setFocusable(false);
@@ -500,7 +488,7 @@ public class JMenuTree extends JFrame
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				JDialogLicenses dl = new  JDialogLicenses(JMenuTree.this);
+				JDialogLicenses dl = new JDialogLicenses(JMenuTree.this);
 				dl.setVisible(true);
 			}
 		});
@@ -521,8 +509,6 @@ public class JMenuTree extends JFrame
 		btnClose.setPreferredSize(new Dimension(32, 32));
 		btnClose.setFocusable(false);
 
-		// expandTree();
-
 		widthadjustment = Utility.getOSWidthAdjustment();
 		heightadjustment = Utility.getOSHeightAdjustment();
 
@@ -535,6 +521,13 @@ public class JMenuTree extends JFrame
 		setBounds(screenBounds.x + ((screenBounds.width - JMenuTree.this.getWidth()) / 2), screenBounds.y + ((screenBounds.height - JMenuTree.this.getHeight()) / 2), JMenuTree.this.getWidth() + widthadjustment,
 				JMenuTree.this.getHeight() + heightadjustment);
 		setVisible(true);
+	}
+
+	private void bringToFront()
+	{
+		JMenuTree.this.setVisible(true);
+		JMenuTree.this.setState(Frame.NORMAL);
+		JMenuTree.this.toFront();
 	}
 
 	private void expandTree()
@@ -627,13 +620,13 @@ public class JMenuTree extends JFrame
 				if (nodeInfo.isLinkToMenuTreeEnabled())
 				{
 					saveChanges();
-					
+
 					if (nodeInfo.getMenuTreeFilename().equals("") == false)
 					{
 						String temp = Common.treeFolderPath.getAbsolutePath();
-						temp = temp.substring(0, temp.length()-1);
-						temp = temp +nodeInfo.getMenuTreeFilename();
-						File linkedXML = new File (temp);
+						temp = temp.substring(0, temp.length() - 1);
+						temp = temp + nodeInfo.getMenuTreeFilename();
+						File linkedXML = new File(temp);
 						if (linkedXML.exists())
 						{
 							Common.treeState.saveTreeState();
@@ -698,92 +691,94 @@ public class JMenuTree extends JFrame
 
 	private void addNode(String type)
 	{
-	    DefaultMutableTreeNode selectedNode =
-	        (DefaultMutableTreeNode) Common.tree.getLastSelectedPathComponent();
-	    if (selectedNode == null) {
-	        return;
-	    }
+		DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) Common.tree.getLastSelectedPathComponent();
+		if (selectedNode == null)
+		{
+			return;
+		}
 
-	    DefaultTreeModel model = (DefaultTreeModel) Common.tree.getModel();
-	    parentNode = selectedNode;
+		DefaultTreeModel model = (DefaultTreeModel) Common.tree.getModel();
+		parentNode = selectedNode;
 
-	    JMenuOption selectedMenuOption = (JMenuOption) selectedNode.getUserObject();
-	    if (selectedMenuOption.getType().equalsIgnoreCase("leaf")) {
-	        parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
-	        if (parentNode == null) {
-	            return;
-	        }
-	    }
+		JMenuOption selectedMenuOption = (JMenuOption) selectedNode.getUserObject();
+		if (selectedMenuOption.getType().equalsIgnoreCase("leaf"))
+		{
+			parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
+			if (parentNode == null)
+			{
+				return;
+			}
+		}
 
-	    JMenuOption newMenuOption = new JMenuOption();
-	    newMenuOption.setType(type);
-	    newMenuOption.setDescription("New " + type);
+		JMenuOption newMenuOption = new JMenuOption();
+		newMenuOption.setType(type);
+		newMenuOption.setDescription("New " + type);
 
-	    DefaultMutableTreeNode newBranchNode = new DefaultMutableTreeNode(newMenuOption);
+		DefaultMutableTreeNode newBranchNode = new DefaultMutableTreeNode(newMenuOption);
 
-	    // Insert
-	    model.insertNodeInto(newBranchNode, parentNode, parentNode.getChildCount());
+		// Insert
+		model.insertNodeInto(newBranchNode, parentNode, parentNode.getChildCount());
 
-	    // Select + bring into view (after the model updates)
-	    SwingUtilities.invokeLater(() -> {
-	        TreePath parentPath = new TreePath(parentNode.getPath());
-	        TreePath newPath = new TreePath(newBranchNode.getPath());
+		// Select + bring into view (after the model updates)
+		SwingUtilities.invokeLater(() -> {
+			TreePath parentPath = new TreePath(parentNode.getPath());
+			TreePath newPath = new TreePath(newBranchNode.getPath());
 
-	        // Ensure parent is expanded so the new child is visible
-	        Common.tree.expandPath(parentPath);
+			// Ensure parent is expanded so the new child is visible
+			Common.tree.expandPath(parentPath);
 
-	        // Select the newly added node
-	        Common.tree.setSelectionPath(newPath);
-	        Common.tree.scrollPathToVisible(newPath);
-	        Common.tree.requestFocusInWindow();
+			// Select the newly added node
+			Common.tree.setSelectionPath(newPath);
+			Common.tree.scrollPathToVisible(newPath);
+			Common.tree.requestFocusInWindow();
 
-	        // Optional: start in-place editing if your tree is editable
+			// Optional: start in-place editing if your tree is editable
 			editNode();
-	    });
+		});
 	}
-
 
 	private void duplicateNode()
 	{
-	    DefaultMutableTreeNode selectedNode =
-	        (DefaultMutableTreeNode) Common.tree.getLastSelectedPathComponent();
+		DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) Common.tree.getLastSelectedPathComponent();
 
-	    if (selectedNode == null) {
-	        return;
-	    }
+		if (selectedNode == null)
+		{
+			return;
+		}
 
-	    DefaultTreeModel model = (DefaultTreeModel) Common.tree.getModel();
-	    JMenuOption selectedMenuOption = (JMenuOption) selectedNode.getUserObject();
+		DefaultTreeModel model = (DefaultTreeModel) Common.tree.getModel();
+		JMenuOption selectedMenuOption = (JMenuOption) selectedNode.getUserObject();
 
-	    DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
-	    if (parentNode == null) {
-	        return;
-	    }
+		DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
+		if (parentNode == null)
+		{
+			return;
+		}
 
-	    JMenuOption newMenuOption = new JMenuOption();
-	    newMenuOption.clone(selectedMenuOption);
-	    newMenuOption.setDescription(selectedMenuOption.getDescription() + " Copy");
+		JMenuOption newMenuOption = new JMenuOption();
+		newMenuOption.clone(selectedMenuOption);
+		newMenuOption.setDescription(selectedMenuOption.getDescription() + " Copy");
 
-	    DefaultMutableTreeNode newBranchNode = new DefaultMutableTreeNode(newMenuOption);
+		DefaultMutableTreeNode newBranchNode = new DefaultMutableTreeNode(newMenuOption);
 
-	    // Insert the duplicate (at end of parent’s children)
-	    // If you prefer it immediately after the original, use:
-	    // int insertIndex = parentNode.getIndex(selectedNode) + 1;
-	    // model.insertNodeInto(newBranchNode, parentNode, insertIndex);
-	    model.insertNodeInto(newBranchNode, parentNode, parentNode.getChildCount());
+		// Insert the duplicate (at end of parent’s children)
+		// If you prefer it immediately after the original, use:
+		// int insertIndex = parentNode.getIndex(selectedNode) + 1;
+		// model.insertNodeInto(newBranchNode, parentNode, insertIndex);
+		model.insertNodeInto(newBranchNode, parentNode, parentNode.getChildCount());
 
-	    // Select + bring into view (after the model updates)
-	    SwingUtilities.invokeLater(() -> {
-	        TreePath parentPath = new TreePath(parentNode.getPath());
-	        TreePath newPath = new TreePath(newBranchNode.getPath());
+		// Select + bring into view (after the model updates)
+		SwingUtilities.invokeLater(() -> {
+			TreePath parentPath = new TreePath(parentNode.getPath());
+			TreePath newPath = new TreePath(newBranchNode.getPath());
 
-	        Common.tree.expandPath(parentPath);
-	        Common.tree.setSelectionPath(newPath);
-	        Common.tree.scrollPathToVisible(newPath);
-	        Common.tree.requestFocusInWindow();
+			Common.tree.expandPath(parentPath);
+			Common.tree.setSelectionPath(newPath);
+			Common.tree.scrollPathToVisible(newPath);
+			Common.tree.requestFocusInWindow();
 
 			editNode();
-	    });
+		});
 	}
 
 	private void editNode()
@@ -841,11 +836,37 @@ public class JMenuTree extends JFrame
 		// Ask for confirmation
 		java.awt.Toolkit.getDefaultToolkit().beep();
 		ImageIcon icn = nodeInfo.getImageIcon();
-		int result = JOptionPane.showConfirmDialog(JMenuTree.this, "Are you sure you want to delete '"+nodeInfo.getDescription()+"'", "Confirm Delete", JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE,icn);
+		int result = JOptionPane.showConfirmDialog(JMenuTree.this, "Are you sure you want to delete '" + nodeInfo.getDescription() + "'", "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, icn);
 
 		if (result == JOptionPane.YES_OPTION)
 		{
 			model.removeNodeFromParent(selectedNode);
+		}
+	}
+
+	private void saveTree()
+	{
+		File saveXML = selectSaveTreeXML();
+
+		if (saveXML != null)
+		{
+			Common.treeFolderFile = saveXML;
+			Common.treeSaver.saveTree(JMenuTree.this);
+			setFrameTitle();
+		}
+	}
+
+	public void openTree()
+	{
+		saveChanges();
+		File saveXML = selectLoadTreeXML();
+		if (saveXML != null)
+		{
+			Common.treeState.saveTreeState();
+			Common.treeFolderFile = saveXML;
+			Common.config.setTreeFilename(Common.treeFolderFile.getName());
+			Common.treeLoader.loadTree(JMenuTree.this);
+			Common.configSaver.save();
 		}
 	}
 
@@ -931,6 +952,13 @@ public class JMenuTree extends JFrame
 		return result;
 	}
 
+	public void settings()
+	{
+		JDialogSettings settings = new JDialogSettings();
+		settings.setVisible(true);
+		Common.treeLoader.loadTree(JMenuTree.this);
+	}
+
 	public void setFrameTitle()
 	{
 		if (Common.treeFolderFile == null)
@@ -965,35 +993,33 @@ public class JMenuTree extends JFrame
 
 	private void confirmExit()
 	{
+		bringToFront();
 		saveChanges();
 
-		int question = JOptionPane.showConfirmDialog(JMenuTree.this, "Exit application ?", "Confirm", JOptionPane.YES_NO_OPTION, 0, Common.icon_confirm);
+		int question = JOptionPane.showConfirmDialog(JMenuTree.this, "Exit application ?", "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, Common.app_icon);
 		if (question == 0)
 		{
 			Common.treeState.saveTreeState();
 			System.exit(0);
 		}
 	}
-	
-	private boolean initFiles(File sourceFile,File destinationFile)
+
+	private boolean initFiles(File sourceFile, File destinationFile)
 	{
 		boolean result = true;
-		
-		
-		if (destinationFile.exists()==false)
+
+		if (destinationFile.exists() == false)
 		{
 			try
-			{				
-				System.out.println("Copying ["+sourceFile.getAbsoluteFile()+"] to ["+destinationFile.getAbsoluteFile()+"]");
-				org.apache.commons.io.FileUtils.copyFile(sourceFile,destinationFile);	
-	
+			{
+				System.out.println("Copying [" + sourceFile.getAbsoluteFile() + "] to [" + destinationFile.getAbsoluteFile() + "]");
+				org.apache.commons.io.FileUtils.copyFile(sourceFile, destinationFile);
 			}
 			catch (Exception ex)
 			{
 				result = false;
 			}
 		}
-				
 		return result;
 	}
 

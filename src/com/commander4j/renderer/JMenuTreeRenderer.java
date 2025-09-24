@@ -1,5 +1,6 @@
 package com.commander4j.renderer;
 
+import java.awt.Color;
 import java.awt.Component;
 
 import javax.swing.ImageIcon;
@@ -9,10 +10,15 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 import com.commander4j.sys.Common;
 import com.commander4j.tree.JMenuOption;
+import com.commander4j.util.Utility;
 
 public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 {
 	private static final long serialVersionUID = 1;
+	private Utility utils = new Utility();
+	private Color rootForeground;
+	private Color branchForeground;
+	private Color leafForeground;
 
 	public JMenuTreeRenderer()
 	{
@@ -32,10 +38,15 @@ public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 		switch (type)
 		{
 		case "root":
+			rootForeground = utils.fromHex(Common.config.getColorBranchForeground());
+			setForeground(rootForeground);
 			setFont(Common.config.getFontPreference("branch"));
 			setIcon(Common.icon_menuStructure);
+			
 			break;
 		case "branch":
+			branchForeground = utils.fromHex(Common.config.getColorBranchForeground());
+			setForeground(branchForeground);
 			setFont(Common.config.getFontPreference("branch"));
 			if (expanded)
 			{
@@ -49,6 +60,9 @@ public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 
 			break;
 		case "leaf":
+			leafForeground = utils.fromHex(Common.config.getColorLeafForeground());
+			setForeground(leafForeground);
+			
 			setFont(Common.config.getFontPreference("leaf"));
 			if (nodeInfo.getIcon().equals(""))
 			{

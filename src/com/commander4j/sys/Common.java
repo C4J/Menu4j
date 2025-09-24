@@ -99,6 +99,10 @@ public class Common {
 	
 	public static String iconPath = "."+File.separator+"images"+File.separator+"appIcons"+File.separator;
 	
+	public final static ImageIcon app_icon = new ImageIcon(iconPath+"icon_32x32.png");
+	public final static ImageIcon tray_icon_mac = new ImageIcon(iconPath+"TrayIcon_Mac.png");
+	public final static ImageIcon tray_icon_windows = new ImageIcon(iconPath+"TrayIcon_Windows.png");
+	public final static ImageIcon tray_icon_linux = new ImageIcon(iconPath+"TrayIcon_Linux.png");
 	public final static ImageIcon icon_left_arrow = new ImageIcon(iconPath+"left_arrow_24x24.png");
 	public final static ImageIcon icon_menuStructure = new ImageIcon(iconPath+"folder_tree.png");
 	public final static ImageIcon icon_select_folder = new ImageIcon(iconPath+"/select_folder_24x24.png");

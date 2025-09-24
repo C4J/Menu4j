@@ -1,7 +1,15 @@
 Manifest-Version: 1.0
 Main-Class: com.commander4j.menu.JMenu
-Class-Path: lib/commons-codec-1.18.0.jar 
+Class-Path: lib/common-image-3.12.0.jar 
+ lib/common-io-3.12.0.jar 
+ lib/common-lang-3.12.0.jar 
+ lib/commons-codec-1.18.0.jar 
  lib/commons-io-2.19.0.jar 
  lib/commons-lang3-3.17.0.jar 
+ lib/dd-plist-1.28.jar 
+ lib/imageio-core-3.12.0.jar 
+ lib/imageio-icns-3.12.0.jar 
+ lib/jna-5.17.0.jar 
+ lib/jna-platform-5.17.0.jar 
  lib/log4j-api-2.25.0.jar 
  lib/log4j-core-2.25.0.jar 

@@ -19,11 +19,11 @@ import javax.swing.DefaultListModel;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -50,8 +50,11 @@ public class JDialogSettings extends JDialog
 	private static final long serialVersionUID = 1L;
 	private final JPanel contentPanel = new JPanel();
 	private JTextField4j textField_script;
-	private JTextField4j textField_Background;
-	private JTextField4j textField_Forground;
+	private JLabel textField_Terminal_Background;
+	private JLabel textField_Terminal_Forground;
+	private JLabel textField_Branch_Forground;
+	private JLabel textField_Leaf_Forground;
+
 	private JList4j_dnd<JEnvironmentVariable> environmentList = new JList4j_dnd<JEnvironmentVariable>();
 	private DefaultListModel<JEnvironmentVariable> environmentModel = new DefaultListModel<JEnvironmentVariable>();
 	private JList4j<String> commandList = new JList4j<String>();
@@ -59,17 +62,22 @@ public class JDialogSettings extends JDialog
 	private JCheckBox4j chckbx_runScript = new JCheckBox4j();
 	private static int widthadjustment = 0;
 	private static int heightadjustment = 0;
-	private JTextArea terminalSample = new JTextArea();
+
 	private Utility utils = new Utility();
 	private JPasswordField4j textField_Password = new JPasswordField4j();
 	private JLabel4j_std lbl_BranchFont = new JLabel4j_std();
 	private JLabel4j_std lbl_LeafFont = new JLabel4j_std();
 	private JLabel4j_std lbl_TerminalFont = new JLabel4j_std();
-	
+
 	private JLabel4j_std lbl_TitleBranchFont = new JLabel4j_std();
 	private JLabel4j_std lbl_TitleLeafFont = new JLabel4j_std();
 	private JLabel4j_std lbl_TitleTerminalFont = new JLabel4j_std();
 	private Utility util = new Utility();
+	
+	private Color terminalForegroundColor;
+	private Color terminalBackgroundColor;
+	private Color leafForegroundColor;
+	private Color branchForegroundColor;
 
 	/**
 	 * Create the dialog.
@@ -83,13 +91,15 @@ public class JDialogSettings extends JDialog
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
 		Utility.setLookAndFeel("Nimbus");
 
-		setBounds(100, 100, 737, 547);
+		setBounds(0, 0, 737, 585);
 		getContentPane().setLayout(null);
 		contentPanel.setBackground(Common.color_app_window);
-		contentPanel.setBounds(0, 0, getWidth(), getHeight());
+		contentPanel.setBounds(0, 0, 737, 585);
 		contentPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
 		getContentPane().add(contentPanel);
 		contentPanel.setLayout(null);
+		
+		getConfigColors();
 
 		if (Common.config.getEnvironmentVariables() != null)
 		{
@@ -109,70 +119,6 @@ public class JDialogSettings extends JDialog
 			commandModel.addAll(Common.config.getValidCommands());
 		}
 
-		JPanel panel_Terminal = new JPanel();
-		panel_Terminal.setBorder(new TitledBorder(null, "Terminal Color", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_Terminal.setBounds(6, 372, 325, 93);
-		contentPanel.add(panel_Terminal);
-		panel_Terminal.setLayout(null);
-		panel_Terminal.setBackground(Common.color_app_window);
-
-		textField_Background = new JTextField4j();
-		textField_Background.setEnabled(false);
-		textField_Background.setBounds(125, 52, 63, 22);
-		panel_Terminal.add(textField_Background);
-		textField_Background.setText(Common.config.getColorTerminalBackground());
-
-		textField_Forground = new JTextField4j();
-		textField_Forground.setEnabled(false);
-		textField_Forground.setBounds(125, 22, 63, 22);
-		panel_Terminal.add(textField_Forground);
-		textField_Forground.setText(Common.config.getColorTerminalForeground());
-
-		JButton4j btnForeground = new JButton4j("Foreground");
-		btnForeground.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				Color newColor = JColorChooser.showDialog(JDialogSettings.this, "Choose Background Color", Color.BLACK);
-
-				if (newColor != null)
-				{
-					terminalSample.setForeground(newColor);
-					textField_Forground.setText(utils.toHex(newColor));
-				}
-			}
-		});
-		btnForeground.setBounds(15, 20, 100, 29);
-		panel_Terminal.add(btnForeground);
-
-		JButton4j btnBackground = new JButton4j("Background");
-		btnBackground.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				Color newColor = JColorChooser.showDialog(JDialogSettings.this, "Choose Background Color", Color.BLACK);
-
-				if (newColor != null)
-				{
-					terminalSample.setBackground(newColor);
-					textField_Background.setText(utils.toHex(newColor));
-				}
-			}
-		});
-		btnBackground.setBounds(15, 50, 100, 29);
-		panel_Terminal.add(btnBackground);
-		terminalSample.setBackground(new Color(0, 0, 0));
-
-		terminalSample.setFont(Common.font_std);
-		terminalSample.setText("Sample\nTerminal\nText");
-		terminalSample.setBounds(200, 16, 100, 60);
-		Color fg = utils.fromHex(Common.config.getColorTerminalForeground());
-		Color bg = utils.fromHex(Common.config.getColorTerminalBackground());
-
-		terminalSample.setForeground(fg);
-		terminalSample.setBackground(bg);
-
-		panel_Terminal.add(terminalSample);
 
 		JPanel panel_ShellScript = new JPanel();
 		panel_ShellScript.setBorder(new TitledBorder(null, "Shell Script", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -183,7 +129,7 @@ public class JDialogSettings extends JDialog
 
 		JPanel panel_Security = new JPanel();
 		panel_Security.setBorder(new TitledBorder(null, "Security", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_Security.setBounds(333, 372, 381, 65);
+		panel_Security.setBounds(333, 401, 381, 65);
 		contentPanel.add(panel_Security);
 		panel_Security.setBackground(Common.color_app_window);
 		panel_Security.setLayout(null);
@@ -411,12 +357,12 @@ public class JDialogSettings extends JDialog
 		JPanel panel_SystemCommands = new JPanel();
 		panel_SystemCommands.setBorder(new TitledBorder(null, "System Commands", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panel_SystemCommands.setBackground(new Color(241, 241, 241));
-		panel_SystemCommands.setBounds(333, 235, 381, 130);
+		panel_SystemCommands.setBounds(6, 401, 328, 130);
 		contentPanel.add(panel_SystemCommands);
 		panel_SystemCommands.setLayout(null);
 
 		JScrollPane scrollPane_System = new JScrollPane();
-		scrollPane_System.setBounds(17, 23, 324, 87);
+		scrollPane_System.setBounds(17, 23, 260, 87);
 		panel_SystemCommands.add(scrollPane_System);
 
 		scrollPane_System.setViewportView(commandList);
@@ -477,7 +423,7 @@ public class JDialogSettings extends JDialog
 				addCommandRecord();
 			}
 		});
-		btnAddCommand.setBounds(343, 23, 30, 30);
+		btnAddCommand.setBounds(285, 23, 30, 30);
 		btnAddCommand.setToolTipText("Input Manual Command");
 		panel_SystemCommands.add(btnAddCommand);
 
@@ -489,7 +435,7 @@ public class JDialogSettings extends JDialog
 				deleteCommandRecord();
 			}
 		});
-		btnDeleteCommand.setBounds(343, 83, 30, 30);
+		btnDeleteCommand.setBounds(285, 83, 30, 30);
 		btnDeleteCommand.setToolTipText("Delete Command");
 		panel_SystemCommands.add(btnDeleteCommand);
 
@@ -501,24 +447,24 @@ public class JDialogSettings extends JDialog
 				editCommandRecord();
 			}
 		});
-		btnEditCommand.setBounds(343, 53, 30, 30);
+		btnEditCommand.setBounds(285, 53, 30, 30);
 		btnEditCommand.setToolTipText("Edit Command");
 		panel_SystemCommands.add(btnEditCommand);
 
 		JPanel panel_Fonts = new JPanel();
 		panel_Fonts.setBorder(new TitledBorder(null, "Fonts", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panel_Fonts.setBackground(new Color(241, 241, 241));
-		panel_Fonts.setBounds(6, 235, 325, 130);
+		panel_Fonts.setBounds(6, 235, 708, 159);
 		contentPanel.add(panel_Fonts);
 		panel_Fonts.setLayout(null);
-		
+
 		lbl_TitleBranchFont.setHorizontalAlignment(SwingConstants.RIGHT);
 		lbl_TitleBranchFont.setBounds(10, 17, 75, 31);
 		lbl_TitleBranchFont.setText("Branch Font");
 		panel_Fonts.add(lbl_TitleBranchFont);
-		
+
 		lbl_BranchFont.setHorizontalAlignment(SwingConstants.LEFT);
-		lbl_BranchFont.setBounds(97, 17, 187, 31);
+		lbl_BranchFont.setBounds(97, 17, 371, 31);
 		lbl_BranchFont.setFont(Common.config.getFontPreference("branch"));
 		lbl_BranchFont.setText(util.getFontDisplayName(Common.config.getFontPreference("branch")));
 		panel_Fonts.add(lbl_BranchFont);
@@ -527,26 +473,26 @@ public class JDialogSettings extends JDialog
 		lbl_TitleLeafFont.setBounds(10, 49, 75, 31);
 		lbl_TitleLeafFont.setText("Leaf Font");
 		panel_Fonts.add(lbl_TitleLeafFont);
-		
+
 		lbl_LeafFont.setHorizontalAlignment(SwingConstants.LEFT);
-		lbl_LeafFont.setBounds(97, 49, 187, 31);
+		lbl_LeafFont.setBounds(97, 49, 371, 31);
 		lbl_LeafFont.setFont(Common.config.getFontPreference("leaf"));
 		lbl_LeafFont.setText(util.getFontDisplayName(Common.config.getFontPreference("leaf")));
 		panel_Fonts.add(lbl_LeafFont);
-		
+
 		lbl_TitleTerminalFont.setHorizontalAlignment(SwingConstants.RIGHT);
 		lbl_TitleTerminalFont.setBounds(10, 82, 75, 31);
 		lbl_TitleTerminalFont.setText("Terminal Font");
 		panel_Fonts.add(lbl_TitleTerminalFont);
-	
+
 		lbl_TerminalFont.setHorizontalAlignment(SwingConstants.LEFT);
-		lbl_TerminalFont.setBounds(94, 82, 187, 31);
+		lbl_TerminalFont.setBounds(97, 82, 371, 31);
 		lbl_TerminalFont.setFont(Common.config.getFontPreference("terminal"));
 		lbl_TerminalFont.setText(util.getFontDisplayName(Common.config.getFontPreference("terminal")));
 		panel_Fonts.add(lbl_TerminalFont);
-		
+
 		JButton4j btnBranchFont = new JButton4j(Common.icon_font);
-		btnBranchFont.setBounds(285, 17, 31, 31);
+		btnBranchFont.setBounds(474, 18, 31, 31);
 		panel_Fonts.add(btnBranchFont);
 		btnBranchFont.addActionListener(new ActionListener()
 		{
@@ -556,9 +502,9 @@ public class JDialogSettings extends JDialog
 				lbl_BranchFont.setText(util.getFontDisplayName(lbl_BranchFont.getFont()));
 			}
 		});
-		
+
 		JButton4j btnLeafFont = new JButton4j(Common.icon_font);
-		btnLeafFont.setBounds(285, 49, 31, 31);
+		btnLeafFont.setBounds(474, 49, 31, 31);
 		panel_Fonts.add(btnLeafFont);
 		btnLeafFont.addActionListener(new ActionListener()
 		{
@@ -568,10 +514,11 @@ public class JDialogSettings extends JDialog
 				lbl_LeafFont.setText(util.getFontDisplayName(lbl_LeafFont.getFont()));
 			}
 		});
-		
+
 		JButton4j btnTerminalFont = new JButton4j(Common.icon_font);
-		btnTerminalFont.setBounds(285, 82, 31, 31);
+		btnTerminalFont.setBounds(474, 80, 31, 31);
 		panel_Fonts.add(btnTerminalFont);
+
 		btnTerminalFont.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -580,6 +527,136 @@ public class JDialogSettings extends JDialog
 				lbl_TerminalFont.setText(util.getFontDisplayName(lbl_TerminalFont.getFont()));
 			}
 		});
+
+		JButton4j btnBranchForeground = new JButton4j("Foreground");
+		btnBranchForeground.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				branchForegroundColor = JColorChooser.showDialog(JDialogSettings.this, "Choose Foreground Color", Color.BLACK);
+
+				if (branchForegroundColor != null)
+				{
+					textField_Branch_Forground.setText(utils.toHex(branchForegroundColor));
+					applyCurrentColors();
+				}
+			}
+		});
+		btnBranchForeground.setBounds(509, 17, 100, 29);
+		panel_Fonts.add(btnBranchForeground);
+
+		JButton4j btnLeafForeground = new JButton4j("Foreground");
+		btnLeafForeground.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				leafForegroundColor = JColorChooser.showDialog(JDialogSettings.this, "Choose Foreground Color", Color.BLACK);
+
+				if (leafForegroundColor != null)
+				{
+					textField_Leaf_Forground.setText(utils.toHex(leafForegroundColor));
+					applyCurrentColors();
+				}
+			}
+		});
+		btnLeafForeground.setBounds(509, 48, 100, 29);
+		panel_Fonts.add(btnLeafForeground);
+
+		JButton4j btnForeground = new JButton4j("Foreground");
+		btnForeground.setBounds(509, 79, 100, 29);
+		panel_Fonts.add(btnForeground);
+
+		JButton4j btnBackground = new JButton4j("Background");
+		btnBackground.setBounds(509, 109, 100, 29);
+		panel_Fonts.add(btnBackground);
+
+		textField_Terminal_Forground = new JLabel();
+		textField_Terminal_Forground.setOpaque(true);
+		textField_Terminal_Forground.setBackground(Common.color_app_window);
+		textField_Terminal_Forground.setHorizontalAlignment(SwingConstants.CENTER);
+		textField_Terminal_Forground.setBounds(614, 79, 75, 29);
+		panel_Fonts.add(textField_Terminal_Forground);
+		textField_Terminal_Forground.setText(Common.config.getColorTerminalForeground());
+
+		textField_Terminal_Background = new JLabel();
+		textField_Terminal_Background.setOpaque(true);
+		textField_Terminal_Background.setBackground(Common.color_app_window);
+		textField_Terminal_Background.setHorizontalAlignment(SwingConstants.CENTER);
+		textField_Terminal_Background.setBounds(614, 109, 75, 29);
+		panel_Fonts.add(textField_Terminal_Background);
+		textField_Terminal_Background.setText(Common.config.getColorTerminalBackground());
+
+		textField_Branch_Forground = new JLabel();
+		textField_Branch_Forground.setOpaque(true);
+		textField_Branch_Forground.setBackground(Common.color_app_window);
+		textField_Branch_Forground.setHorizontalAlignment(SwingConstants.CENTER);
+		textField_Branch_Forground.setText((String) null);
+		textField_Branch_Forground.setText(Common.config.getColorBranchForeground());
+		textField_Branch_Forground.setBounds(614, 17, 75, 29);
+		panel_Fonts.add(textField_Branch_Forground);
+
+		textField_Leaf_Forground = new JLabel();
+		textField_Leaf_Forground.setOpaque(true);
+		textField_Leaf_Forground.setBackground(Common.color_app_window);
+		textField_Leaf_Forground.setHorizontalAlignment(SwingConstants.CENTER);
+		textField_Leaf_Forground.setText((String) null);
+		textField_Leaf_Forground.setText(Common.config.getColorLeafForeground());
+		textField_Leaf_Forground.setBounds(614, 48, 75, 29);
+		panel_Fonts.add(textField_Leaf_Forground);
+
+
+		btnBackground.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				terminalBackgroundColor = JColorChooser.showDialog(JDialogSettings.this, "Choose Background Color", Color.BLACK);
+
+				if (terminalBackgroundColor != null)
+				{
+					textField_Terminal_Background.setText(utils.toHex(terminalBackgroundColor));
+					applyCurrentColors();
+				}
+			}
+		});
+		btnForeground.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				terminalForegroundColor = JColorChooser.showDialog(JDialogSettings.this, "Choose Background Color", Color.BLACK);
+
+				if (terminalForegroundColor != null)
+				{
+
+					textField_Terminal_Forground.setText(utils.toHex(terminalForegroundColor));
+					applyCurrentColors();
+				}
+			}
+		});
+		
+		JButton4j okButton = new JButton4j(Common.icon_ok);
+		okButton.setBounds(411, 492, 103, 30);
+		contentPanel.add(okButton);
+		okButton.setText("Confirm");
+		okButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+
+				saveConfig();
+			}
+		});
+		okButton.setActionCommand("OK");
+		getRootPane().setDefaultButton(okButton);
+
+		JButton4j cancelButton = new JButton4j(Common.icon_cancel);
+		cancelButton.setBounds(526, 492, 103, 30);
+		contentPanel.add(cancelButton);
+		cancelButton.setText("Cancel");
+		cancelButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				dispose();
+			}
+		});
+		
+		applyCurrentColors();
 
 		widthadjustment = Utility.getOSWidthAdjustment();
 		heightadjustment = Utility.getOSHeightAdjustment();
@@ -600,32 +677,7 @@ public class JDialogSettings extends JDialog
 				textField_treeFilename.requestFocus();
 				textField_treeFilename.setCaretPosition(textField_treeFilename.getText().length());
 
-				JButton4j okButton = new JButton4j(Common.icon_ok);
-				okButton.setBounds(258, 468, 103, 30);
-				contentPanel.add(okButton);
-				okButton.setText("Confirm");
-				okButton.addActionListener(new ActionListener()
-				{
-					public void actionPerformed(ActionEvent e)
-					{
 
-						saveConfig();
-					}
-				});
-				okButton.setActionCommand("OK");
-				getRootPane().setDefaultButton(okButton);
-
-				JButton4j cancelButton = new JButton4j(Common.icon_cancel);
-				cancelButton.setBounds(373, 468, 103, 30);
-				contentPanel.add(cancelButton);
-				cancelButton.setText("Cancel");
-				cancelButton.addActionListener(new ActionListener()
-				{
-					public void actionPerformed(ActionEvent e)
-					{
-						dispose();
-					}
-				});
 
 			}
 		});
@@ -634,7 +686,7 @@ public class JDialogSettings extends JDialog
 	private Font selectFont(Font currentFont)
 	{
 		Font result = currentFont;
-		JDialogFonts dialog = new JDialogFonts(JDialogSettings.this,currentFont);
+		JDialogFonts dialog = new JDialogFonts(JDialogSettings.this, currentFont);
 		dialog.setVisible(true);
 		result = JDialogFonts.selectedFont;
 
@@ -796,8 +848,10 @@ public class JDialogSettings extends JDialog
 
 	private void saveConfig()
 	{
-		Common.config.setColorTerminalBackground(textField_Background.getText());
-		Common.config.setColorTerminalForground(textField_Forground.getText());
+		Common.config.setColorTerminalBackground(textField_Terminal_Background.getText());
+		Common.config.setColorTerminalForground(textField_Terminal_Forground.getText());
+		Common.config.setColorLeafForegound(textField_Leaf_Forground.getText());
+		Common.config.setColorBranchForeground(textField_Branch_Forground.getText());
 		Common.config.setScriptEnabled(chckbx_runScript.isSelected());
 		Common.config.setScriptFilename(textField_script.getText());
 		Common.config.setPassword(new String(textField_Password.getPassword()));
@@ -815,18 +869,39 @@ public class JDialogSettings extends JDialog
 			String env = commandModel.getElementAt(x);
 			Common.config.addValidCommand(env);
 		}
-		
-		Map<String,JDBFont> savePrefs = new HashMap<String,JDBFont>();
 
-		savePrefs.put("terminal", new JDBFont(lbl_TerminalFont.getFont().getName(),util.parseFontStyle(lbl_TerminalFont.getFont().getStyle()),lbl_TerminalFont.getFont().getSize()));
-		savePrefs.put("leaf", new JDBFont(lbl_LeafFont.getFont().getName(),util.parseFontStyle(lbl_LeafFont.getFont().getStyle()),lbl_LeafFont.getFont().getSize()));
-		savePrefs.put("branch", new JDBFont(lbl_BranchFont.getFont().getName(),util.parseFontStyle(lbl_BranchFont.getFont().getStyle()),lbl_BranchFont.getFont().getSize()));
+		Map<String, JDBFont> savePrefs = new HashMap<String, JDBFont>();
+
+		savePrefs.put("terminal", new JDBFont(lbl_TerminalFont.getFont().getName(), util.parseFontStyle(lbl_TerminalFont.getFont().getStyle()), lbl_TerminalFont.getFont().getSize()));
+		savePrefs.put("leaf", new JDBFont(lbl_LeafFont.getFont().getName(), util.parseFontStyle(lbl_LeafFont.getFont().getStyle()), lbl_LeafFont.getFont().getSize()));
+		savePrefs.put("branch", new JDBFont(lbl_BranchFont.getFont().getName(), util.parseFontStyle(lbl_BranchFont.getFont().getStyle()), lbl_BranchFont.getFont().getSize()));
 
 		Common.config.setFontPreferences(savePrefs);
 
 		Common.configSaver.save();
 
 		dispose();
+	}
+	
+	private void getConfigColors()
+	{
+		terminalForegroundColor = utils.fromHex(Common.config.getColorTerminalForeground());
+		terminalBackgroundColor = utils.fromHex(Common.config.getColorTerminalBackground());
+		
+		leafForegroundColor = utils.fromHex(Common.config.getColorLeafForeground());
+	    branchForegroundColor = utils.fromHex(Common.config.getColorBranchForeground());
+	}
+	
+	private void applyCurrentColors()
+	{
+		textField_Terminal_Background.setForeground(terminalForegroundColor);
+		textField_Terminal_Background.setBackground(terminalBackgroundColor);
+		
+		textField_Terminal_Forground.setForeground(terminalForegroundColor);
+		textField_Terminal_Forground.setBackground(terminalBackgroundColor);
+		
+	    textField_Branch_Forground.setForeground(branchForegroundColor);
+		textField_Leaf_Forground.setForeground(leafForegroundColor);
 	}
 
 	private static void addPopup(Component component, final JPopupMenu popup)

@@ -18,8 +18,10 @@ public class JMenuConfig
 	private String tree_filename = "tree.xml";
 	private String shell_script_filename = "run-in-user-env.sh";
 	private String enable_shell_script = "Y";
-	private String color_terminal_background = "BLACK";
-	private String color_terminal_forground = "GREEN";
+	private String color_terminal_background = "#000000";
+	private String color_terminal_forground = "#66FF66";
+	private String color_leaf_foreground = "#000000";
+	private String color_branch_foreground = "#000000";
 	private String password = "";
 	private JCipher advancedEncryptionStandard = new JCipher(Common.encryptionKey);
 
@@ -58,6 +60,26 @@ public class JMenuConfig
 	public void setColorTerminalBackground(String terminalBackgroundColour)
 	{
 		this.color_terminal_background = terminalBackgroundColour;
+	}
+	
+	public String getColorLeafForeground()
+	{
+		return color_leaf_foreground;
+	}
+
+	public void setColorLeafForegound(String leadforegroundColour)
+	{
+		this.color_leaf_foreground = leadforegroundColour;
+	}
+	
+	public String getColorBranchForeground()
+	{
+		return color_branch_foreground;
+	}
+
+	public void setColorBranchForeground(String branchforegroundColour)
+	{
+		this.color_branch_foreground = branchforegroundColour;
 	}
 
 	public String getColorTerminalForeground()

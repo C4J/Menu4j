@@ -43,7 +43,7 @@ import com.commander4j.sys.Common;
 public class JHelp
 {
 
-	private String helpURL;
+	public String helpURL;
 
 	private static boolean HelpAvailable = false;
 
@@ -120,7 +120,7 @@ public class JHelp
 			}
 		}
 	}
-
+	
 	private class ButtonHandler implements ActionListener
 	{
 
@@ -150,6 +150,31 @@ public class JHelp
 
 				}
 			}
+		}
+	}
+	
+	public void showHelp()
+	{
+		try
+		{
+			Desktop desktop= Desktop.getDesktop();
+			URI uri;
+			if (helpURL.contains("http"))
+			{
+				uri = new URI(helpURL);
+				desktop.browse(uri);
+
+			} else
+			{
+				File file = new File(helpURL);
+				uri = file.toURI().normalize();
+				desktop.browse(uri);
+
+			}
+		} catch (Exception ex)
+		{
+
+
 		}
 	}
 

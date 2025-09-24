@@ -13,6 +13,7 @@ import org.w3c.dom.NodeList;
 
 import com.commander4j.db.JDBFont;
 import com.commander4j.sys.Common;
+import com.commander4j.util.Utility;
 
 public class JMenuConfigLoader
 {
@@ -20,6 +21,7 @@ public class JMenuConfigLoader
 	public static JMenuConfig load()
 	{
 		JMenuConfig config = new JMenuConfig();
+		Utility utils = new Utility();
 
 		try
 		{
@@ -58,9 +60,39 @@ public class JMenuConfigLoader
 			NodeList colorNodes = doc.getElementsByTagName("color");
 			if (colorNodes.getLength() > 0)
 			{
-				Element color = (Element) colorNodes.item(0);
-				config.setColorTerminalForground(color.getAttribute("foreground"));
-				config.setColorTerminalBackground(color.getAttribute("background"));
+				for (int i = 0; i < colorNodes.getLength(); i++)
+				{
+					Element var = (Element) colorNodes.item(i);
+					String id = var.getAttribute("id");
+	
+					switch (id)
+					{
+					case "terminal":
+						config.setColorTerminalForground(var.getAttribute("foreground"));
+						config.setColorTerminalBackground(var.getAttribute("background"));
+						break;
+						
+					case "leaf":
+						config.setColorLeafForegound(var.getAttribute("foreground"));
+						break;
+						
+					case "branch":
+						config.setColorBranchForeground(var.getAttribute("foreground"));
+						break;
+					}
+					
+				}
+				
+			}
+			
+			if (utils.replaceNullStringwithBlank(config.getColorLeafForeground()).equals(""))
+			{
+				config.setColorLeafForegound("#000000");
+			}
+			
+			if (utils.replaceNullStringwithBlank(config.getColorBranchForeground()).equals(""))
+			{
+				config.setColorBranchForeground("#000000");
 			}
 
 			NodeList envNodes = doc.getElementsByTagName("variable");
