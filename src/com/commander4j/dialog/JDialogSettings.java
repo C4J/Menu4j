@@ -792,7 +792,7 @@ public class JDialogSettings extends JDialog
 
 	private void addEnvironmentRecord()
 	{
-		String param = JOptionPane.showInputDialog(JDialogSettings.this, "New Environment Variable");
+		String param = JOptionPane.showInputDialog(JDialogSettings.this, "New Environment Variable VAR=XXX");
 
 		if (param != null)
 		{

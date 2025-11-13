@@ -19,5 +19,6 @@
 	<classpathentry kind="lib" path="lib/imageio-icns-3.12.0.jar"/>
 	<classpathentry kind="lib" path="lib/jna-5.17.0.jar"/>
 	<classpathentry kind="lib" path="lib/jna-platform-5.17.0.jar"/>
+	<classpathentry kind="lib" path="lib/imageio-jpeg-3.12.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

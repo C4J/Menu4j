@@ -7,63 +7,49 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 import com.commander4j.dnd.JDragDropAppInfo;
-import com.twelvemonkeys.image.AffineTransformOp;
 
-public final class ICNSIconExporter
-{
+public final class ICNSIconExporter {
 
-	public ICNSIconExporter()
-	{
-	}
+	public ICNSIconExporter() {}
 
-	/**
-	 * Exports the icon from a macOS .app bundle as a PNG of the given size into
-	 * the target folder. Output filename is the app bundle name (without .app)
-	 * plus ".png".
-	 *
-	 * @param appBundle
-	 *            Path to the .app bundle (e.g., /Applications/Safari.app)
-	 * @param outputFolder
-	 *            Path to a folder where the PNG should be saved (created if
-	 *            missing)
-	 * @param sizePx
-	 *            target edge size in pixels (e.g., 24 for 24x24)
-	 * @return the path to the written PNG
-	 * @throws IOException
-	 *             if anything goes wrong (no icon found, read/write issues,
-	 *             etc.)
-	 */
-	public boolean exportAppIconPng(JDragDropAppInfo info, Path outputFolder, int sizePx) throws IOException
-	{
+	/** Entry point: same signature/behaviour as before. */
+	public boolean exportAppIconPng(JDragDropAppInfo info, Path outputFolder, int sizePx) throws IOException {
 		boolean result = false;
 
-		Path outPng;
+		// 1) Prefer embedded PNG/JP2 reps from ICNS blocks (most reliable)
+		BufferedImage bestInFile = readClosestEncodedFromIcnsBlocks(info.iconIcnsPath.toFile(), sizePx);
 
-		BufferedImage bestInFile = readClosestImageFromIcns(info.iconIcnsPath.toFile(), sizePx);
+		// 2) Fallback to ICNS reader (still skip mask/blackish)
+		if (bestInFile == null) {
+			bestInFile = readClosestImageFromIcnsSkippingBlack(info.iconIcnsPath.toFile(), sizePx);
+		}
 
-		if (bestInFile != null)
-		{
+		if (bestInFile != null) {
+			bestInFile = toSRGB(bestInFile);
 			BufferedImage scaled = scaleTo(info, bestInFile, sizePx);
 
 			Files.createDirectories(outputFolder);
-
 			String appName = stripDotApp(info.bundlePath.getFileName().toString());
-			outPng = outputFolder.resolve(appName + ".png");
+			Path outPng = outputFolder.resolve(appName + ".png");
 
-			if (ImageIO.write(scaled, "png", outPng.toFile()))
-			{
+			if (ImageIO.write(scaled, "png", outPng.toFile())) {
 				result = true;
 			}
 		}
@@ -71,156 +57,229 @@ public final class ICNSIconExporter
 		return result;
 	}
 
-	private String stripDotApp(String name)
-	{
+	private String stripDotApp(String name) {
 		return name.endsWith(".app") ? name.substring(0, name.length() - 4) : name;
 	}
 
+	/* ===================== Path A: Parse ICNS blocks & extract PNG/JP2 ===================== */
 
-	/**
-	 * Reads every image rep from an .icns and returns the largest one. Requires
-	 * TwelveMonkeys ImageIO.
-	 */
-	private BufferedImage readClosestImageFromIcns(File icnsFile, int sizePx) throws IOException
-	{
-		try (ImageInputStream iis = ImageIO.createImageInputStream(icnsFile))
-		{
-			if (iis == null)
-				return null;
+	private BufferedImage readClosestEncodedFromIcnsBlocks(File icnsFile, int sizePx) throws IOException {
+		byte[] all = Files.readAllBytes(icnsFile.toPath());
+		if (all.length < 8) return null;
+
+		// Verify ICNS header
+		if (!(all[0] == 'i' && all[1] == 'c' && all[2] == 'n' && all[3] == 's')) return null;
+
+		int fileLen = toIntBE(all, 4);
+		int pos = 8;
+
+		List<BufferedImage> candidates = new ArrayList<>();
+		@SuppressWarnings("unused")
+		int pngCount = 0, jp2Count = 0;
+
+		while (pos + 8 <= all.length && pos < fileLen) {
+			int blockStart = pos;
+			@SuppressWarnings("unused")
+			String type = ascii(all, pos, 4);
+			int blockLen = toIntBE(all, pos + 4);
+			if (blockLen < 8 || blockStart + blockLen > all.length) break;
+
+			int payloadStart = blockStart + 8;
+			int payloadLen   = blockLen - 8;
+
+			// Try PNG
+			if (payloadLen >= 8 && isPngSig(all, payloadStart)) {
+				BufferedImage img = decodeWithImageIO(all, payloadStart, payloadLen);
+				if (img != null && !looksBlackOrTransparent(img)) {
+					candidates.add(img);
+				}
+				pngCount++;
+			}
+			// Try JPEG2000: either JP2 signature box (12 bytes) or raw codestream (FF 4F FF 51)
+			else if (isJp2Sig(all, payloadStart, payloadLen) || isJp2CodestreamSig(all, payloadStart, payloadLen)) {
+				BufferedImage img = decodeWithImageIO(all, payloadStart, payloadLen); // requires JP2 plugin (e.g., TwelveMonkeys)
+				if (img != null && !looksBlackOrTransparent(img)) {
+					candidates.add(img);
+				}
+				jp2Count++;
+			}
+
+			pos += blockLen;
+		}
+
+		// DEBUG (optional)
+		// System.out.printf("ICNS blocks: PNG=%d JP2=%d candidates=%d%n", pngCount, jp2Count, candidates.size());
+
+		if (candidates.isEmpty()) return null;
+		return pickClosestByWidthPreferAlpha(candidates, sizePx);
+	}
+
+	/* ===================== Path B: ICNS reader fallback (skip blackish) ===================== */
+
+	private BufferedImage readClosestImageFromIcnsSkippingBlack(File icnsFile, int sizePx) throws IOException {
+		try (ImageInputStream iis = ImageIO.createImageInputStream(icnsFile)) {
+			if (iis == null) return null;
+
 			Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-			if (!readers.hasNext())
-				return null;
+			if (!readers.hasNext()) return null;
+
 			ImageReader reader = readers.next();
-			try
-			{
+			try {
 				reader.setInput(iis, false, false);
 				int num = reader.getNumImages(true);
-				BufferedImage best = null;
-				int over = 0;
-				int closest = -1;
-				for (int i = 0; i < num; i++)
-				{
+
+				BufferedImage bestAtLeast = null; int bestAtLeastW = Integer.MAX_VALUE; boolean bestAtLeastAlpha = false;
+				BufferedImage bestBelow   = null; int bestBelowW   = -1;                 boolean bestBelowAlpha   = false;
+
+				for (int i = 0; i < num; i++) {
 					BufferedImage img = reader.read(i);
+					if (img == null) continue;
+					if (looksBlackOrTransparent(img)) continue; // skip mask/dud frames
 
-					if (img != null)
-					{
-						System.out.println(img.getWidth());
+					final int w = img.getWidth();
+					final boolean hasAlpha = img.getColorModel().hasAlpha();
 
-						over = img.getWidth() - sizePx;
-
-						if (((over > 0) && (over < closest)) || (closest < 0))
-						{
-							best = img;
-							closest = over;
+					if (w >= sizePx) {
+						if (w < bestAtLeastW || (w == bestAtLeastW && hasAlpha && !bestAtLeastAlpha)) {
+							bestAtLeast = img; bestAtLeastW = w; bestAtLeastAlpha = hasAlpha;
+						}
+					} else {
+						if (w > bestBelowW || (w == bestBelowW && hasAlpha && !bestBelowAlpha)) {
+							bestBelow = img; bestBelowW = w; bestBelowAlpha = hasAlpha;
 						}
 					}
 				}
-				return best;
+				return (bestAtLeast != null) ? bestAtLeast : bestBelow;
 			}
-			finally
-			{
+			finally {
 				reader.dispose();
 			}
 		}
 	}
 
-	/** High-quality ARGB scaling. */
-	private BufferedImage scaleTo(JDragDropAppInfo info, BufferedImage src, int maxSize)
-	{
-		// --- 1) Compute target size (preserve aspect ratio, never exceed max)
-		// ---
+	/* ===================== Scaling (unchanged alpha-safe pipeline) ===================== */
+
+	private BufferedImage scaleTo(JDragDropAppInfo info, BufferedImage srcIn, int maxSize) {
+		BufferedImage src = toARGB(srcIn);
+
 		final int w = src.getWidth();
 		final int h = src.getHeight();
 		final double s = Math.min(maxSize / (double) w, maxSize / (double) h);
 		final int targetW = Math.max(1, (int) Math.round(w * s));
 		final int targetH = Math.max(1, (int) Math.round(h * s));
 
-		if (targetW == w && targetH == h)
-		{
-			return toARGB(src); // nothing to do
+		if (targetW == w && targetH == h) {
+			return toARGB(src);
 		}
 
-		// --- 2) Convert to premultiplied ARGB to avoid edge halos on
-		// transparency ---
-		BufferedImage work = toARGBPre(src);
+		BufferedImage work = src;
+		int curW = w, curH = h;
 
-		// --- 3) Progressive downscale by ~2x steps (much cleaner than 1 big
-		// jump) ---
-		int curW = work.getWidth();
-		int curH = work.getHeight();
+		while (curW / 2 >= targetW && curH / 2 >= targetH) {
+			int nextW = Math.max(targetW, curW / 2);
+			int nextH = Math.max(targetH, curH / 2);
 
-		while (curW / 2 >= targetW && curH / 2 >= targetH)
-		{
-			curW = Math.max(targetW, curW / 2);
-			curH = Math.max(targetH, curH / 2);
-
-			BufferedImage down = new BufferedImage(curW, curH, BufferedImage.TYPE_INT_ARGB_PRE);
+			BufferedImage down = new BufferedImage(nextW, nextH, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g2 = down.createGraphics();
-			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			g2.setComposite(AlphaComposite.Src);
+			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
 			g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g2.setComposite(AlphaComposite.Src); // copy alpha exactly
-			g2.drawImage(work, 0, 0, curW, curH, null);
+			g2.drawImage(work, 0, 0, nextW, nextH, null);
 			g2.dispose();
 
-			if (work != src)
-				work.flush();
+			if (work != src) work.flush();
 			work = down;
+			curW = nextW; curH = nextH;
 		}
 
-		// --- 4) Final exact scale using AffineTransformOp (bicubic) ---
-		if (work.getWidth() != targetW || work.getHeight() != targetH)
-		{
-			AffineTransform at = AffineTransform.getScaleInstance(targetW / (double) work.getWidth(), targetH / (double) work.getHeight());
-			AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
-			BufferedImage exact = new BufferedImage(targetW, targetH, BufferedImage.TYPE_INT_ARGB_PRE);
-			op.filter(work, exact);
+		if (work.getWidth() != targetW || work.getHeight() != targetH) {
+			BufferedImage exact = new BufferedImage(targetW, targetH, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g = exact.createGraphics();
+			g.setComposite(AlphaComposite.Src);
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+			AffineTransform at = AffineTransform.getScaleInstance(
+					targetW / (double) work.getWidth(),
+					targetH / (double) work.getHeight());
+			g.drawRenderedImage(work, at);
+			g.dispose();
+
 			work.flush();
 			work = exact;
 		}
 
-		// --- 5) Optional: light unsharp mask after big reductions to restore
-		// micro-contrast ---
-		if (s < 0.5)
-		{ // only if we scaled down a lot
-			float[] kernel =
-			{ 0f, -1f, 0f, -1f, 5f, -1f, 0f, -1f, 0f };
+		// Optional sharpen only if fully opaque
+		double overallScale = Math.min((double) targetW / w, (double) targetH / h);
+		if (overallScale < 0.5 && isOpaque(work)) {
+			float[] kernel = { 0f, -1f, 0f, -1f, 5f, -1f, 0f, -1f, 0f };
 			ConvolveOp sharpen = new ConvolveOp(new Kernel(3, 3, kernel), ConvolveOp.EDGE_NO_OP, null);
-			BufferedImage sharp = new BufferedImage(work.getWidth(), work.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
+			BufferedImage sharp = new BufferedImage(work.getWidth(), work.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			sharpen.filter(work, sharp);
 			work.flush();
 			work = sharp;
 		}
 
-		// --- 6) Convert back to non-premultiplied ARGB (nicer for ImageIO
-		// PNGs) ---
-		BufferedImage out = new BufferedImage(work.getWidth(), work.getHeight(), BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = out.createGraphics();
-		g.setComposite(AlphaComposite.Src);
-		g.drawImage(work, 0, 0, null);
-		g.dispose();
-		work.flush();
-
-		// --- 7) Save (you can keep or move this out if you want pure “scale
-		// only”) ---
+		// Mirror write to your cache path (same behaviour as before)
 		Path outputPath = Paths.get("./images/appIcons/" + info.bundleName + ".png");
-		try
-		{
-			ImageIO.write(out, "png", outputPath.toFile());
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		try { ImageIO.write(work, "png", outputPath.toFile()); } catch (IOException e) { e.printStackTrace(); }
 
-		return out;
+		return work;
 	}
 
-	// Helpers
-	private BufferedImage toARGB(BufferedImage src)
-	{
-		if (src.getType() == BufferedImage.TYPE_INT_ARGB)
-			return src;
+	/* ===================== Utilities ===================== */
+
+	private static BufferedImage pickClosestByWidthPreferAlpha(List<BufferedImage> imgs, int sizePx) {
+		BufferedImage bestAtLeast = null; int bestAtLeastW = Integer.MAX_VALUE; boolean bestAtLeastAlpha = false;
+		BufferedImage bestBelow = null;   int bestBelowW   = -1;                 boolean bestBelowAlpha   = false;
+
+		for (BufferedImage img : imgs) {
+			if (img == null) continue;
+			if (looksBlackOrTransparent(img)) continue;
+
+			int w = img.getWidth();
+			boolean alpha = img.getColorModel().hasAlpha();
+
+			if (w >= sizePx) {
+				if (w < bestAtLeastW || (w == bestAtLeastW && alpha && !bestAtLeastAlpha)) {
+					bestAtLeast = img; bestAtLeastW = w; bestAtLeastAlpha = alpha;
+				}
+			} else {
+				if (w > bestBelowW || (w == bestBelowW && alpha && !bestBelowAlpha)) {
+					bestBelow = img; bestBelowW = w; bestBelowAlpha = alpha;
+				}
+			}
+		}
+		return (bestAtLeast != null) ? bestAtLeast : bestBelow;
+	}
+
+	private static boolean looksBlackOrTransparent(BufferedImage img) {
+		int w = img.getWidth(), h = img.getHeight();
+		int stepX = Math.max(1, w / 16), stepY = Math.max(1, h / 16);
+		int total = 0, dud = 0;
+		for (int y = 0; y < h; y += stepY) {
+			for (int x = 0; x < w; x += stepX) {
+				int argb = img.getRGB(x, y);
+				int a = (argb >>> 24) & 0xFF;
+				int r = (argb >>> 16) & 0xFF;
+				int g = (argb >>> 8) & 0xFF;
+				int b = (argb) & 0xFF;
+				total++;
+				if (a < 4 || (r < 6 && g < 6 && b < 6)) dud++;
+			}
+		}
+		return total > 0 && dud * 100 / total >= 95;
+	}
+
+	private static boolean isOpaque(BufferedImage img) {
+		return !img.getColorModel().hasAlpha();
+	}
+
+	private static BufferedImage toARGB(BufferedImage src) {
+		if (src == null) return null;
+		if (src.getType() == BufferedImage.TYPE_INT_ARGB) return src;
 		BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = dst.createGraphics();
 		g.setComposite(AlphaComposite.Src);
@@ -229,16 +288,55 @@ public final class ICNSIconExporter
 		return dst;
 	}
 
-	private BufferedImage toARGBPre(BufferedImage src)
-	{
-		if (src.getType() == BufferedImage.TYPE_INT_ARGB_PRE)
-			return src;
-		BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
+	private static BufferedImage toSRGB(BufferedImage src) {
+		if (src == null) return null;
+		BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = dst.createGraphics();
 		g.setComposite(AlphaComposite.Src);
-		g.drawImage(src, 0, 0, null);
+		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g.drawImage(src, 0, 0, null); // convert to default sRGB
 		g.dispose();
 		return dst;
 	}
 
+	private static boolean isPngSig(byte[] a, int off) {
+		return off + 8 <= a.length &&
+				(a[off] & 0xFF) == 0x89 && a[off + 1] == 0x50 && a[off + 2] == 0x4E && a[off + 3] == 0x47 &&
+				a[off + 4] == 0x0D && a[off + 5] == 0x0A && a[off + 6] == 0x1A && a[off + 7] == 0x0A;
+	}
+
+	private static boolean isJp2Sig(byte[] a, int off, int len) {
+		// JP2 signature box: 00 00 00 0C 6A 50 20 20 0D 0A 87 0A
+		return len >= 12 && off + 12 <= a.length &&
+				a[off] == 0x00 && a[off + 1] == 0x00 && a[off + 2] == 0x00 && a[off + 3] == 0x0C &&
+				a[off + 4] == 0x6A && a[off + 5] == 0x50 && a[off + 6] == 0x20 && a[off + 7] == 0x20 &&
+				a[off + 8] == 0x0D && a[off + 9] == 0x0A && (a[off + 10] & 0xFF) == 0x87 && a[off + 11] == 0x0A;
+	}
+
+	private static boolean isJp2CodestreamSig(byte[] a, int off, int len) {
+		// raw codestream: FF 4F FF 51
+		return len >= 4 && off + 4 <= a.length &&
+				(a[off] & 0xFF) == 0xFF && (a[off + 1] & 0xFF) == 0x4F &&
+				(a[off + 2] & 0xFF) == 0xFF && (a[off + 3] & 0xFF) == 0x51;
+	}
+
+	private static BufferedImage decodeWithImageIO(byte[] a, int off, int len) {
+		try (ByteArrayInputStream bin = new ByteArrayInputStream(a, off, len)) {
+			return ImageIO.read(bin); // decodes PNG and (if plugin present) JPEG 2000
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	private static int toIntBE(byte[] a, int off) {
+		if (off + 4 > a.length) return 0;
+		return ByteBuffer.wrap(a, off, 4).order(ByteOrder.BIG_ENDIAN).getInt();
+	}
+
+	private static String ascii(byte[] a, int off, int len) {
+		if (off < 0 || off + len > a.length) return "";
+		StringBuilder sb = new StringBuilder(len);
+		for (int i = off; i < off + len; i++) sb.append((char) (a[i] & 0xFF));
+		return sb.toString();
+	}
 }
