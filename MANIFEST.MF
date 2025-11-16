@@ -9,6 +9,7 @@ Class-Path: lib/common-image-3.12.0.jar
  lib/dd-plist-1.28.jar 
  lib/imageio-core-3.12.0.jar 
  lib/imageio-icns-3.12.0.jar 
+ lib/imageio-jpeg-3.12.0.jar 
  lib/jna-5.17.0.jar 
  lib/jna-platform-5.17.0.jar 
  lib/log4j-api-2.25.0.jar 

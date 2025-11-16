@@ -25,7 +25,7 @@ import com.commander4j.sys.Common;
 public class JDialogImageChooser extends JDialog {
 
     private static final long serialVersionUID = 1L;
-	private File selectedImageFile;
+	private String selectedImageFile;
 
     public JDialogImageChooser(Frame owner, File folder) {
         super(owner, "Select an Image", true);
@@ -53,7 +53,7 @@ public class JDialogImageChooser extends JDialog {
                     imgButton.setContentAreaFilled(false);
 
                     imgButton.addActionListener(e -> {
-                        selectedImageFile = file;
+                        selectedImageFile = file.getName().toString();
                         dispose();
                     });
 
@@ -96,7 +96,7 @@ public class JDialogImageChooser extends JDialog {
         return files != null ? java.util.Arrays.asList(files) : new ArrayList<>();
     }
 
-    public File getSelectedImageFile() {
+    public String getSelectedImageFile() {
         return selectedImageFile;
     }
 

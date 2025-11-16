@@ -2,7 +2,12 @@ package com.commander4j.renderer;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -42,7 +47,7 @@ public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 			setForeground(rootForeground);
 			setFont(Common.config.getFontPreference("branch"));
 			setIcon(Common.icon_menuStructure);
-			
+
 			break;
 		case "branch":
 			branchForeground = utils.fromHex(Common.config.getColorBranchForeground());
@@ -62,7 +67,7 @@ public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 		case "leaf":
 			leafForeground = utils.fromHex(Common.config.getColorLeafForeground());
 			setForeground(leafForeground);
-			
+
 			setFont(Common.config.getFontPreference("leaf"));
 			if (nodeInfo.getIcon().equals(""))
 			{
@@ -70,7 +75,16 @@ public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 			}
 			else
 			{
-				setIcon(new ImageIcon(Common.iconPath + nodeInfo.getIcon()));
+				try
+				{
+					BufferedImage img = ImageIO.read(new File(Common.iconPath + nodeInfo.getIcon()));
+					setIcon(new ImageIcon(img.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
+				}
+				catch (IOException e)
+				{
+
+					setIcon(new ImageIcon(Common.iconPath + nodeInfo.getIcon()));
+				}
 			}
 			break;
 		default:

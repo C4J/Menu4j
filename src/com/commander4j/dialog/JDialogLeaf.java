@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -202,12 +203,13 @@ public class JDialogLeaf extends JDialog
 		textField_hint.setText(menuOption.getHint());
 
 		textField_icon = new JTextField4j();
+
 		textField_icon.addKeyListener(new KeyAdapter()
 		{
 			@Override
 			public void keyTyped(KeyEvent e)
 			{
-				previewIcon();
+				previewIcon(textField_icon.getText());
 			}
 		});
 		textField_icon.getDocument().addDocumentListener(new DocumentListener()
@@ -215,19 +217,19 @@ public class JDialogLeaf extends JDialog
 			@Override
 			public void insertUpdate(DocumentEvent e)
 			{
-				previewIcon();
+				previewIcon(textField_icon.getText());
 			}
 
 			@Override
 			public void removeUpdate(DocumentEvent e)
 			{
-				previewIcon();
+				previewIcon(textField_icon.getText());
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent e)
 			{
-				previewIcon();
+				previewIcon(textField_icon.getText());
 			}
 		});
 		textField_icon.setBounds(170, 357, 147, 22);
@@ -247,7 +249,7 @@ public class JDialogLeaf extends JDialog
 		lbl_type.setHorizontalAlignment(SwingConstants.RIGHT);
 		lbl_type.setBounds(6, 12, 120, 22);
 		contentPanel.add(lbl_type);
-		
+
 		lbl_dnd_help.setBounds(406, 12, 200, 22);
 		lbl_dnd_help.setIcon(Common.icon_left_arrow);
 		contentPanel.add(lbl_dnd_help);
@@ -377,18 +379,18 @@ public class JDialogLeaf extends JDialog
 				JDialogImageChooser ic = new JDialogImageChooser(parent, Common.iconFolder);
 				ic.setVisible(true);
 
-				File iconFile = ic.getSelectedImageFile();
+				String iconFile = ic.getSelectedImageFile();
 				if (iconFile != null)
 				{
 
-					textField_icon.setText(iconFile.getName());
-					Common.iconFolder = iconFile.getParentFile();
+					textField_icon.setText(iconFile);
+					// Common.iconFolder = iconFile.getParentFile();
 
 					textField_icon.requestFocus();
 					textField_icon.setCaretPosition(textField_icon.getText().length());
-
-					previewIcon();
+					previewIcon(iconFile);
 				}
+
 			}
 		});
 		btnIcon.setBounds(322, 353, 30, 30);
@@ -654,7 +656,7 @@ public class JDialogLeaf extends JDialog
 				{
 					try
 					{
-						File outputfile = new File("."+File.separator+"images"+File.separator+"appIcons"+File.separator +  DandDpanel.getBundleId() + ".png");
+						File outputfile = new File("." + File.separator + "images" + File.separator + "appIcons" + File.separator + DandDpanel.getBundleId() + ".png");
 						ImageIO.write(icon, "png", outputfile);
 					}
 					catch (IOException e)
@@ -682,8 +684,7 @@ public class JDialogLeaf extends JDialog
 				paramModel.add(3, "/D");
 				paramModel.add(4, DandDpanel.getWorkingDirectory());
 				paramModel.add(5, DandDpanel.getExecutableName());
-				
-				
+
 				String desc = WinExeMetadata.getProductName(info.bundlePath);
 				if (!desc.isEmpty())
 				{
@@ -694,7 +695,7 @@ public class JDialogLeaf extends JDialog
 					textField_description.setText("Windows Executable : " + DandDpanel.getBundleName());
 				}
 			}
-			
+
 			if (info.bundleType.equals(JDragDropAppInfo.Type_windowsCMD))
 			{
 				textField_icon.setText("terminal_24x24.png");
@@ -717,10 +718,10 @@ public class JDialogLeaf extends JDialog
 				paramModel.add(3, "/D");
 				paramModel.add(4, DandDpanel.getWorkingDirectory());
 				paramModel.add(5, DandDpanel.getExecutableName());
-				
+
 				textField_description.setText("Windows Command : " + DandDpanel.getBundleName());
 			}
-			
+
 			if (info.bundleType.equals(JDragDropAppInfo.Type_windowsBAT))
 			{
 				textField_icon.setText("terminal_24x24.png");
@@ -743,11 +744,11 @@ public class JDialogLeaf extends JDialog
 				paramModel.add(3, "/D");
 				paramModel.add(4, DandDpanel.getWorkingDirectory());
 				paramModel.add(5, DandDpanel.getExecutableName());
-				
+
 				textField_description.setText("Windows Batch File : " + DandDpanel.getBundleName());
 			}
 
-			previewIcon();
+			previewIcon(textField_icon.getText());
 
 		});
 		// }
@@ -936,22 +937,44 @@ public class JDialogLeaf extends JDialog
 		}
 	}
 
-	private void previewIcon()
+	private void previewIcon(String filename)
 	{
 		ImageIcon result;
 
-		String filename = textField_icon.getText();
+		filename = utils.replaceNullStringwithBlank(filename);
+		
+		if (filename.equals("")==false)
+		{
+			filename = Common.iconPath + filename;
+		}
 
-			System.out.println("previewIcon="+filename);
+		File abc = new File(filename);
 
-			result = new ImageIcon(Common.iconPath +filename);
+		if (abc.exists())
+		{
 			
-			System.out.println("ImageIcon="+Common.iconPath +filename);
-			
+			try
+			{
+				BufferedImage img = ImageIO.read(abc);
+				result = (new ImageIcon(img.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
+			}
+			catch (IOException e)
+			{
+
+				result = new ImageIcon(Common.iconPath + filename);
+			}
+
 			lbl_icon_preview.setIcon(result);
 			lbl_icon_preview.invalidate();
 			lbl_icon_preview.revalidate();
 			lbl_icon_preview.repaint();
+
+		}
+		else
+		{
+			lbl_icon_preview.setIcon(null);
+		}
+
 
 	}
 

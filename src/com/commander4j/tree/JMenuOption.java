@@ -1,7 +1,12 @@
 package com.commander4j.tree;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
 import com.commander4j.sys.Common;
@@ -16,22 +21,23 @@ public class JMenuOption
 	private String icon = "";
 	private String redirectInput = "";
 	private String redirectOutput = "";
-	private String shellScriptRequired="";
-	private String terminalWindowRequired="";
+	private String shellScriptRequired = "";
+	private String terminalWindowRequired = "";
 	private String linkToMenuTreeEnabled = "";
 	private String menuTreeFilename = "";
 	private boolean confirmExecute = false;
 	private LinkedList<String> parameters = new LinkedList<String>();
-	
+
 	public String getLinkToMenuTreeEnabled()
 	{
 		return linkToMenuTreeEnabled;
 	}
-	
-	public String getShellScriptRequired() {
+
+	public String getShellScriptRequired()
+	{
 		return shellScriptRequired;
 	}
-	
+
 	public boolean isConfirmExecute()
 	{
 		return confirmExecute;
@@ -46,7 +52,7 @@ public class JMenuOption
 	{
 		return terminalWindowRequired;
 	}
-	
+
 	public boolean isLinkToMenuTreeEnabled()
 	{
 		if (linkToMenuTreeEnabled.equals("true"))
@@ -58,8 +64,9 @@ public class JMenuOption
 			return false;
 		}
 	}
-	
-	public boolean isShellScriptRequired() {
+
+	public boolean isShellScriptRequired()
+	{
 		if (shellScriptRequired.equals("true"))
 		{
 			return true;
@@ -69,8 +76,9 @@ public class JMenuOption
 			return false;
 		}
 	}
-	
-	public boolean isTerminalWindowRequired() {
+
+	public boolean isTerminalWindowRequired()
+	{
 		if (terminalWindowRequired.equals("true"))
 		{
 			return true;
@@ -81,14 +89,15 @@ public class JMenuOption
 		}
 	}
 
-	public void setShellScriptRequired(String shell) {
+	public void setShellScriptRequired(String shell)
+	{
 		if (shell.equals(""))
 		{
 			shell = "true";
 		}
 		this.shellScriptRequired = shell;
 	}
-	
+
 	public void setLinkToMenuTreeEnabled(String enabled)
 	{
 		if (enabled.equals(""))
@@ -97,16 +106,18 @@ public class JMenuOption
 		}
 		this.linkToMenuTreeEnabled = enabled;
 	}
-	
-	public void setTerminalWindowRequired(String term) {
+
+	public void setTerminalWindowRequired(String term)
+	{
 		if (term.equals(""))
 		{
 			term = "true";
 		}
 		this.terminalWindowRequired = term;
 	}
-	
-	public void setLinkToMenuTreeEnabled(boolean checked) {
+
+	public void setLinkToMenuTreeEnabled(boolean checked)
+	{
 		if (checked)
 		{
 			this.linkToMenuTreeEnabled = "true";
@@ -116,8 +127,9 @@ public class JMenuOption
 			this.linkToMenuTreeEnabled = "false";
 		}
 	}
-	
-	public void setShellScriptRequiredChecked(boolean checked) {
+
+	public void setShellScriptRequiredChecked(boolean checked)
+	{
 		if (checked)
 		{
 			this.shellScriptRequired = "true";
@@ -126,10 +138,11 @@ public class JMenuOption
 		{
 			this.shellScriptRequired = "false";
 		}
-			
+
 	}
-	
-	public void setTerminalWindowRequiredChecked(boolean checked) {
+
+	public void setTerminalWindowRequiredChecked(boolean checked)
+	{
 		if (checked)
 		{
 			this.terminalWindowRequired = "true";
@@ -138,9 +151,9 @@ public class JMenuOption
 		{
 			this.terminalWindowRequired = "false";
 		}
-			
+
 	}
-	
+
 	public LinkedList<String> getParameters()
 	{
 		return parameters;
@@ -160,7 +173,7 @@ public class JMenuOption
 	{
 		return menuTreeFilename;
 	}
-	
+
 	public String getRedirectInput()
 	{
 		return redirectInput;
@@ -175,7 +188,7 @@ public class JMenuOption
 	{
 		this.menuTreeFilename = menufilename;
 	}
-	
+
 	public String getRedirectOutput()
 	{
 		return redirectOutput;
@@ -238,13 +251,30 @@ public class JMenuOption
 
 	public String getIcon()
 	{
-		return icon;
+		if (icon.equals("")) icon = "function.gif"
+;		return icon;
 	}
-	
+
 	public ImageIcon getImageIcon()
 	{
 		ImageIcon result;
-		result = new ImageIcon(Common.iconPath + getIcon());
+		// result = new ImageIcon(Common.iconPath + getIcon());
+
+
+
+			try
+			{
+				BufferedImage img = ImageIO.read(new File(Common.iconPath + getIcon()));
+				result = (new ImageIcon(img.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
+			}
+			catch (IOException e)
+			{
+
+				result = (new ImageIcon(Common.iconPath + getIcon()));
+			}
+
+
+
 		return result;
 	}
 
@@ -252,11 +282,11 @@ public class JMenuOption
 	{
 		if (icon.contains(Common.iconPath))
 		{
-		System.out.println("setIcon = "+icon);
+			System.out.println("setIcon = " + icon);
 		}
 		this.icon = icon;
 	}
-	
+
 	public void clear()
 	{
 		setType("");
@@ -271,9 +301,9 @@ public class JMenuOption
 		setRedirectOutput("");
 		setShellScriptRequired("false");
 		setLinkToMenuTreeEnabled("false");
-		setTerminalWindowRequired("false");	
+		setTerminalWindowRequired("false");
 	}
-	
+
 	public void clone(JMenuOption opt)
 	{
 		setType(opt.getType());
