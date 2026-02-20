@@ -40,6 +40,8 @@ public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 
 		String type = nodeInfo.getType();
 
+
+
 		switch (type)
 		{
 		case "root":
@@ -90,6 +92,11 @@ public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 		default:
 			setIcon(Common.icon_info);
 			break;
+		}
+
+		if (selected)
+		{
+			setForeground(Color.white);
 		}
 
 		if (nodeInfo.getHint().equals(""))

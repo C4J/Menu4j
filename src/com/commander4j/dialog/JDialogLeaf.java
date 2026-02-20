@@ -942,7 +942,7 @@ public class JDialogLeaf extends JDialog
 		ImageIcon result;
 
 		filename = utils.replaceNullStringwithBlank(filename);
-		
+
 		if (filename.equals("")==false)
 		{
 			filename = Common.iconPath + filename;
@@ -952,7 +952,7 @@ public class JDialogLeaf extends JDialog
 
 		if (abc.exists())
 		{
-			
+
 			try
 			{
 				BufferedImage img = ImageIO.read(abc);
@@ -1054,20 +1054,21 @@ public class JDialogLeaf extends JDialog
 	{
 		File result = null;
 
-		JFileChooser fc = new JFileChooser(Common.treeFolderFile);
-		fc.setSelectedFile(Common.treeFolderFile);
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setCurrentDirectory(Common.treeFolderFile);
 
 		JFileFilterXML ffi = new JFileFilterXML();
-		fc.setApproveButtonText("Open");
-		fc.addChoosableFileFilter(ffi);
-		fc.setFileFilter(ffi);
-		fc.setMultiSelectionEnabled(false);
+		fileChooser.setApproveButtonText("Open");
+		fileChooser.addChoosableFileFilter(ffi);
+		fileChooser.setFileFilter(ffi);
+		fileChooser.setMultiSelectionEnabled(false);
 
-		int returnVal = fc.showOpenDialog(JDialogLeaf.this);
+		int returnVal = fileChooser.showOpenDialog(JDialogLeaf.this);
 
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 		{
-			result = fc.getSelectedFile();
+			result = fileChooser.getSelectedFile();
+			Common.treeFolderFile =new File(result.getParent());
 		}
 
 		return result;

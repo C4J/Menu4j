@@ -75,7 +75,7 @@ public class JMenuTree extends JFrame
 	Image trayIconImage;
 	Utility utils = new Utility();
 
-	public static String version = "1.83";
+	public static String version = "1.84";
 
 	/**
 	 * Launch the application.
@@ -874,20 +874,21 @@ public class JMenuTree extends JFrame
 	{
 		File result = null;
 
-		JFileChooser fc = new JFileChooser(Common.treeFolderFile);
-		fc.setSelectedFile(Common.treeFolderFile);
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setCurrentDirectory(Common.treeFolderFile);
 
 		JFileFilterXML ffi = new JFileFilterXML();
-		fc.setApproveButtonText("Open");
-		fc.addChoosableFileFilter(ffi);
-		fc.setFileFilter(ffi);
-		fc.setMultiSelectionEnabled(false);
+		fileChooser.setApproveButtonText("Open");
+		fileChooser.addChoosableFileFilter(ffi);
+		fileChooser.setFileFilter(ffi);
+		fileChooser.setMultiSelectionEnabled(false);
 
-		int returnVal = fc.showOpenDialog(JMenuTree.this);
+		int returnVal = fileChooser.showOpenDialog(JMenuTree.this);
 
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 		{
-			result = fc.getSelectedFile();
+			result = fileChooser.getSelectedFile();
+			Common.treeFolderFile =new File(result.getParent());
 		}
 
 		return result;
@@ -897,20 +898,21 @@ public class JMenuTree extends JFrame
 	{
 		File result = null;
 
-		JFileChooser fc = new JFileChooser(Common.treeFolderFile);
-		fc.setSelectedFile(Common.treeFolderFile);
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setCurrentDirectory(Common.treeFolderFile);
 
 		JFileFilterXML ffi = new JFileFilterXML();
-		fc.setApproveButtonText("Save");
-		fc.addChoosableFileFilter(ffi);
-		fc.setFileFilter(ffi);
-		fc.setMultiSelectionEnabled(false);
+		fileChooser.setApproveButtonText("Save");
+		fileChooser.addChoosableFileFilter(ffi);
+		fileChooser.setFileFilter(ffi);
+		fileChooser.setMultiSelectionEnabled(false);
 
-		int returnVal = fc.showOpenDialog(JMenuTree.this);
+		int returnVal = fileChooser.showOpenDialog(JMenuTree.this);
 
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 		{
-			result = fc.getSelectedFile();
+			result = fileChooser.getSelectedFile();
+			Common.treeFolderFile =new File(result.getParent());
 		}
 		else
 		{
@@ -924,24 +926,25 @@ public class JMenuTree extends JFrame
 	{
 		File result = null;
 
-		JFileChooser fc = new JFileChooser(Common.treeFolderPath);
-		fc.setSelectedFile(Common.treeFolderPath);
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setCurrentDirectory(Common.treeFolderFile);
 
 		JFileFilterXML ffi = new JFileFilterXML();
-		fc.setApproveButtonText("Create");
-		fc.addChoosableFileFilter(ffi);
-		fc.setFileFilter(ffi);
-		fc.setMultiSelectionEnabled(false);
+		fileChooser.setApproveButtonText("Create");
+		fileChooser.addChoosableFileFilter(ffi);
+		fileChooser.setFileFilter(ffi);
+		fileChooser.setMultiSelectionEnabled(false);
 
-		int returnVal = fc.showSaveDialog(JMenuTree.this);
+		int returnVal = fileChooser.showSaveDialog(JMenuTree.this);
 
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 		{
-			result = fc.getSelectedFile();
+			result = fileChooser.getSelectedFile();
 			String extension = FilenameUtils.getExtension(result.getAbsolutePath());
 			if (extension.equals(""))
 			{
 				result = new File(result.getAbsolutePath() + ".xml");
+				Common.treeFolderFile =new File(result.getParent());
 			}
 		}
 		else
