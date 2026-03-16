@@ -75,7 +75,7 @@ public class JMenuTree extends JFrame
 	Image trayIconImage;
 	Utility utils = new Utility();
 
-	public static String version = "1.84";
+	public static String version = "1.85";
 
 	/**
 	 * Launch the application.
@@ -900,7 +900,7 @@ public class JMenuTree extends JFrame
 
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setCurrentDirectory(Common.treeFolderFile);
-
+		fileChooser.setSelectedFile(Common.treeFolderFile);
 		JFileFilterXML ffi = new JFileFilterXML();
 		fileChooser.setApproveButtonText("Save");
 		fileChooser.addChoosableFileFilter(ffi);

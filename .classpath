@@ -6,19 +6,19 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/log4j-api-2.25.0.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-core-2.25.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-io-2.19.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-codec-1.18.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang3-3.17.0.jar"/>
-	<classpathentry kind="lib" path="lib/common-image-3.12.0.jar"/>
-	<classpathentry kind="lib" path="lib/common-io-3.12.0.jar"/>
-	<classpathentry kind="lib" path="lib/common-lang-3.12.0.jar"/>
-	<classpathentry kind="lib" path="lib/dd-plist-1.28.jar"/>
-	<classpathentry kind="lib" path="lib/imageio-core-3.12.0.jar"/>
-	<classpathentry kind="lib" path="lib/imageio-icns-3.12.0.jar"/>
-	<classpathentry kind="lib" path="lib/jna-5.17.0.jar"/>
-	<classpathentry kind="lib" path="lib/jna-platform-5.17.0.jar"/>
-	<classpathentry kind="lib" path="lib/imageio-jpeg-3.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.25.3.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.25.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.21.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.21.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.20.0.jar"/>
+	<classpathentry kind="lib" path="lib/common-image-3.13.1.jar"/>
+	<classpathentry kind="lib" path="lib/common-io-3.13.1.jar"/>
+	<classpathentry kind="lib" path="lib/common-lang-3.13.1.jar"/>
+	<classpathentry kind="lib" path="lib/dd-plist-1.29.jar"/>
+	<classpathentry kind="lib" path="lib/imageio-core-3.13.1.jar"/>
+	<classpathentry kind="lib" path="lib/imageio-icns-3.13.1.jar"/>
+	<classpathentry kind="lib" path="lib/jna-5.18.1.jar"/>
+	<classpathentry kind="lib" path="lib/jna-platform-5.18.1.jar"/>
+	<classpathentry kind="lib" path="lib/imageio-jpeg-3.13.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
