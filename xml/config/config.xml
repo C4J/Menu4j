@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<config>
+    <tree filename="tree.xml" password="iTPSPMBTnoIiKoYtkfYh0g=="/>
+    <shell>
+        <shell_script enabled="Y" filename="run-in-user-env.sh"/>
+    </shell>
+    <colors>
+        <color background="#000000" foreground="#00FF00" id="terminal"/>
+        <color foreground="#000000" id="leaf"/>
+        <color foreground="#0033FF" id="branch"/>
+    </colors>
+    <environment>
+        <variable key="TERM" value="xterm-256color"/>
+    </environment>
+    <validate>
+        <system_command name="open"/>
+        <system_command name="qlmanage"/>
+        <system_command name="sips"/>
+        <system_command name="osascript"/>
+        <system_command name="pbcopy"/>
+        <system_command name="mdfind"/>
+        <system_command name="mdls"/>
+        <system_command name="say"/>
+        <system_command name="defaults"/>
+    </validate>
+    <fontPreferences>
+        <fontSetting id="terminal" name="Monospaced" size="12" style="Plain"/>
+        <fontSetting id="leaf" name="Charter" size="14" style="Plain"/>
+        <fontSetting id="branch" name="Arial Rounded MT Bold" size="14" style="Plain"/>
+    </fontPreferences>
+</config>
