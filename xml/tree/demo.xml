@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root description="Example Menu" type="tree">
+    <node description="M A C O S" icon="" type="branch"/>
+    <node description="W I N D O W S" icon="" type="branch"/>
+    <node description="L I N U X" icon="" type="branch"/>
+</root>

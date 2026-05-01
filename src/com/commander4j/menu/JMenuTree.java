@@ -32,6 +32,7 @@ import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -75,7 +76,7 @@ public class JMenuTree extends JFrame
 	Image trayIconImage;
 	Utility utils = new Utility();
 
-	public static String version = "1.85";
+	public static String version = "2.00";
 
 	/**
 	 * Launch the application.
@@ -106,6 +107,7 @@ public class JMenuTree extends JFrame
 		setFrameTitle();
 
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
+		UIManager.put("Tree.rendererFillBackground", Boolean.TRUE);
 		Utility.setLookAndFeel("Nimbus");
 
 		Common.osName = Utility.getOSName();
@@ -957,6 +959,7 @@ public class JMenuTree extends JFrame
 
 	public void settings()
 	{
+		saveChanges();
 		JDialogSettings settings = new JDialogSettings();
 		settings.setVisible(true);
 		Common.treeLoader.loadTree(JMenuTree.this);

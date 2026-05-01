@@ -27,7 +27,7 @@ public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 
 	public JMenuTreeRenderer()
 	{
-
+		setOpaque(true);
 	}
 
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
@@ -97,6 +97,12 @@ public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 		if (selected)
 		{
 			setForeground(Color.white);
+			setOpaque(false);
+		}
+		else
+		{
+			setOpaque(true);
+			setBackground(tree.getBackground());
 		}
 
 		if (nodeInfo.getHint().equals(""))

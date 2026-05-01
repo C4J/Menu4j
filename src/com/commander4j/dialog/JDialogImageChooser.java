@@ -52,7 +52,7 @@ public class JDialogImageChooser extends JDialog {
                     imgButton.setBorder(BorderFactory.createEmptyBorder());
                     imgButton.setContentAreaFilled(false);
 
-                    imgButton.addActionListener(e -> {
+                    imgButton.addActionListener(_ -> {
                         selectedImageFile = file.getName().toString();
                         dispose();
                     });
@@ -71,7 +71,7 @@ public class JDialogImageChooser extends JDialog {
 
         JButton4j cancel = new JButton4j("Cancel");
         cancel.setIcon(Common.icon_cancel);
-        cancel.addActionListener(e -> {
+        cancel.addActionListener(_ -> {
             selectedImageFile = null;
             dispose();
         });
@@ -86,14 +86,17 @@ public class JDialogImageChooser extends JDialog {
     }
 
     private java.util.List<File> loadImageFiles(File folder) {
-        File[] files = folder.listFiles((dir, name) ->
+        File[] files = folder.listFiles((_, name) ->
             name.toLowerCase().endsWith(".png") ||
             name.toLowerCase().endsWith(".jpg") ||
             name.toLowerCase().endsWith(".jpeg") ||
             name.toLowerCase().endsWith(".gif")
         );
+        if (files == null) {
+            return new ArrayList<>();
+        }
         Arrays.sort(files);
-        return files != null ? java.util.Arrays.asList(files) : new ArrayList<>();
+        return java.util.Arrays.asList(files);
     }
 
     public String getSelectedImageFile() {

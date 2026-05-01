@@ -5,12 +5,16 @@
         <shell_script enabled="Y" filename="run-in-user-env.sh"/>
     </shell>
     <colors>
-        <color background="#000000" foreground="#00FF00" id="terminal"/>
+        <color background="#000000" foreground="#66FF66" id="terminal"/>
         <color foreground="#000000" id="leaf"/>
-        <color foreground="#0033FF" id="branch"/>
+        <color foreground="#000000" id="branch"/>
     </colors>
     <environment>
+        <variable key="MACOS_KEYSTORE" value="/Users/dave/Commander4j/Certificates/Certificates.p12"/>
+        <variable key="MACOS_PRIVATE_API_KEY" value="/Users/dave/Commander4j/Certificates/AuthKey_57H54R8ALK.p8"/>
+        <variable key="MACOS_ISSUER_ID" value="533a4f47-67e1-47f8-8833-122cf2b02139"/>
         <variable key="TERM" value="xterm-256color"/>
+        <variable key="MACOS_KEY_ID" value="57H54R8ALK"/>
     </environment>
     <validate>
         <system_command name="open"/>
@@ -25,7 +29,7 @@
     </validate>
     <fontPreferences>
         <fontSetting id="terminal" name="Monospaced" size="12" style="Plain"/>
-        <fontSetting id="leaf" name="Charter" size="14" style="Plain"/>
+        <fontSetting id="leaf" name="Charter" size="16" style="Plain"/>
         <fontSetting id="branch" name="Arial Rounded MT Bold" size="14" style="Plain"/>
     </fontPreferences>
 </config>
