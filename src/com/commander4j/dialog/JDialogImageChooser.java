@@ -30,7 +30,7 @@ public class JDialogImageChooser extends JDialog {
     public JDialogImageChooser(Frame owner, File folder) {
         super(owner, "Select an Image", true);
         setResizable(false);
-        
+
         getContentPane().setLayout(new BorderLayout());
         getContentPane().setBackground(Common.color_app_window);
 

@@ -12,5 +12,5 @@ Class-Path: lib/common-image-3.13.1.jar
  lib/imageio-jpeg-3.13.1.jar 
  lib/jna-5.18.1.jar 
  lib/jna-platform-5.18.1.jar 
- lib/log4j-api-2.25.3.jar 
- lib/log4j-core-2.25.3.jar 
+ lib/log4j-api-2.25.4.jar 
+ lib/log4j-core-2.25.4.jar 
