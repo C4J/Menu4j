@@ -956,12 +956,11 @@ public class JDialogLeaf extends JDialog
 			try
 			{
 				BufferedImage img = ImageIO.read(abc);
-				result = (new ImageIcon(img.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
+				result = (img == null) ? null : new ImageIcon(img.getScaledInstance(25, 25, Image.SCALE_SMOOTH));
 			}
 			catch (IOException e)
 			{
-
-				result = new ImageIcon(Common.iconPath + filename);
+				result = null;
 			}
 
 			lbl_icon_preview.setIcon(result);

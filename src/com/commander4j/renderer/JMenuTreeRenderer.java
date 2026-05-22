@@ -80,7 +80,14 @@ public class JMenuTreeRenderer extends DefaultTreeCellRenderer
 				try
 				{
 					BufferedImage img = ImageIO.read(new File(Common.iconPath + nodeInfo.getIcon()));
-					setIcon(new ImageIcon(img.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
+					if (img == null)
+					{
+						setIcon(new ImageIcon(Common.iconPath + nodeInfo.getIcon()));
+					}
+					else
+					{
+						setIcon(new ImageIcon(img.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
+					}
 				}
 				catch (IOException e)
 				{

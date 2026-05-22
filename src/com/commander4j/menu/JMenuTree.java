@@ -76,7 +76,7 @@ public class JMenuTree extends JFrame
 	Image trayIconImage;
 	Utility utils = new Utility();
 
-	public static String version = "2.02";
+	public static String version = "2.03";
 
 	/**
 	 * Launch the application.

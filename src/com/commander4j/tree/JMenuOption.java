@@ -265,7 +265,14 @@ public class JMenuOption
 			try
 			{
 				BufferedImage img = ImageIO.read(new File(Common.iconPath + getIcon()));
-				result = (new ImageIcon(img.getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
+				if (img == null)
+				{
+					result = new ImageIcon(Common.iconPath + getIcon());
+				}
+				else
+				{
+					result = new ImageIcon(img.getScaledInstance(25, 25, Image.SCALE_SMOOTH));
+				}
 			}
 			catch (IOException e)
 			{

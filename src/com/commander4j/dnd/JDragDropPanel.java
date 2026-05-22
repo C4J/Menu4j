@@ -7,6 +7,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -156,60 +157,30 @@ public class JDragDropPanel extends JPanel {
                 List<File> files = (List<File>) support.getTransferable()
                         .getTransferData(DataFlavor.javaFileListFlavor);
                 for (File f : files) {
-                	
+
                 	//APP BUNDLE
                     if (f.isDirectory() && f.getName().toLowerCase().endsWith(".app")) {
-                        try {
-                            JDragDropAppInfo info = JDragDropAppInfo.from_app(f.toPath());
-                            setAppInfo(info);
-                            return true; // take first valid .app
-                        } catch (Exception ex) {
-                            showError("Failed to read app bundle:\n" + f + "\n\n" + ex.getMessage());
-                        }
+                        if (parseAndApply(f, "app bundle", () -> JDragDropAppInfo.from_app(f.toPath()))) return true;
                     }
-                    
+
                     //BASH SCRIPT
                     if (!f.isDirectory() && f.getName().toLowerCase().endsWith(".sh")) {
-                        try {
-                            JDragDropAppInfo info = JDragDropAppInfo.from_sh(f.toPath());
-                            setAppInfo(info);
-                            return true; // take first valid .app
-                        } catch (Exception ex) {
-                            showError("Failed to read sh:\n" + f + "\n\n" + ex.getMessage());
-                        }
+                        if (parseAndApply(f, "sh", () -> JDragDropAppInfo.from_sh(f.toPath()))) return true;
                     }
-                    
+
                     //WINDOWS EXE
                     if (!f.isDirectory() && f.getName().toLowerCase().endsWith(".exe")) {
-                        try {
-                            JDragDropAppInfo info = JDragDropAppInfo.from_exe(f.toPath());
-                            setAppInfo(info);
-                            return true; // take first valid .app
-                        } catch (Exception ex) {
-                            showError("Failed to read exe:\n" + f + "\n\n" + ex.getMessage());
-                        }
+                        if (parseAndApply(f, "exe", () -> JDragDropAppInfo.from_exe(f.toPath()))) return true;
                     }
-                    
+
                     //WINDOWS CMD
                     if (!f.isDirectory() && f.getName().toLowerCase().endsWith(".cmd")) {
-                        try {
-                            JDragDropAppInfo info = JDragDropAppInfo.from_cmd(f.toPath());
-                            setAppInfo(info);
-                            return true; // take first valid .app
-                        } catch (Exception ex) {
-                            showError("Failed to read cmd:\n" + f + "\n\n" + ex.getMessage());
-                        }
+                        if (parseAndApply(f, "cmd", () -> JDragDropAppInfo.from_cmd(f.toPath()))) return true;
                     }
-                    
+
                     //WINDOWS BAT
                     if (!f.isDirectory() && f.getName().toLowerCase().endsWith(".bat")) {
-                        try {
-                            JDragDropAppInfo info = JDragDropAppInfo.from_bat(f.toPath());
-                            setAppInfo(info);
-                            return true; // take first valid .app
-                        } catch (Exception ex) {
-                            showError("Failed to read bat:\n" + f + "\n\n" + ex.getMessage());
-                        }
+                        if (parseAndApply(f, "bat", () -> JDragDropAppInfo.from_bat(f.toPath()))) return true;
                     }
                 }
                 showError("Please drop a valid executable file here.");
@@ -223,6 +194,23 @@ public class JDragDropPanel extends JPanel {
         private void showError(String msg) {
             // Keep it non-modal (we're in a dialog), but you can change this.
             JOptionPane.showMessageDialog(JDragDropPanel.this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        private boolean parseAndApply(File f, String label, Callable<JDragDropAppInfo> parser) {
+            JDragDropAppInfo info;
+            try {
+                info = parser.call();
+            } catch (Exception ex) {
+                showError("Failed to read " + label + ":\n" + f + "\n\n" + ex.getMessage());
+                return false;
+            }
+            try {
+                setAppInfo(info);
+            } catch (Exception ex) {
+                showError("Drop handler error for " + f + ":\n\n" + ex.getMessage());
+                return false;
+            }
+            return true;
         }
     }
 
