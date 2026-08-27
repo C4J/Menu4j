@@ -18,7 +18,7 @@
 	<classpathentry kind="lib" path="lib/jna-5.18.1.jar"/>
 	<classpathentry kind="lib" path="lib/jna-platform-5.18.1.jar"/>
 	<classpathentry kind="lib" path="lib/imageio-jpeg-3.13.1.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-api-2.25.4.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-core-2.25.4.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.25.5.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.25.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
