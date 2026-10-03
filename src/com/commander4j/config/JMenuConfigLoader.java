@@ -1,6 +1,7 @@
 package com.commander4j.config;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -25,7 +26,8 @@ public class JMenuConfigLoader
 
 		try
 		{
-			Map<String, String> envVars = new HashMap<>();
+			// LinkedHashMap keeps the sequence set in the settings dialog
+			Map<String, String> envVars = new LinkedHashMap<>();
 			Map<String, JDBFont> fontPrefs = new HashMap<>();
 			
 			LinkedList<String> validCommands = new LinkedList<String>();

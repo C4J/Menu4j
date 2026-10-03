@@ -798,12 +798,33 @@ public class JDialogSettings extends JDialog
 		{
 			if (param.equals("") == false)
 			{
-				String[] parts = param.split("=");
-				JEnvironmentVariable env = new JEnvironmentVariable(parts[0], parts[1]);
-				environmentModel.addElement(env);
-				environmentList.setModel(environmentModel);
+				JEnvironmentVariable env = parseEnvironmentRecord(param);
+				if (env != null)
+				{
+					environmentModel.addElement(env);
+					environmentList.setModel(environmentModel);
+				}
 			}
 		}
+	}
+
+	private JEnvironmentVariable parseEnvironmentRecord(String param)
+	{
+		JEnvironmentVariable result = null;
+
+		// Split on the first "=" only - the value may contain "=" or be empty
+		String[] parts = param.split("=", 2);
+
+		if ((parts.length == 2) && (parts[0].trim().equals("") == false))
+		{
+			result = new JEnvironmentVariable(parts[0].trim(), parts[1]);
+		}
+		else
+		{
+			JOptionPane.showMessageDialog(JDialogSettings.this, "Environment Variable must be in the format VAR=XXX", "Invalid Environment Variable", JOptionPane.ERROR_MESSAGE);
+		}
+
+		return result;
 	}
 
 	private void deleteEnvironmentRecord()
@@ -830,16 +851,12 @@ public class JDialogSettings extends JDialog
 			String result = JOptionPane.showInputDialog(JDialogSettings.this, "Amend Environment Variable", param);
 			if (result != null)
 			{
-				String[] parts = result.split("=");
-				JEnvironmentVariable env = new JEnvironmentVariable(parts[0], parts[1]);
-				if (result != null)
+				if (result.equals("") == false)
 				{
-					if (result.equals("") == false)
+					JEnvironmentVariable env = parseEnvironmentRecord(result);
+					if (env != null)
 					{
-
-						environmentModel.removeElementAt(idx);
-						environmentModel.insertElementAt(env, idx);
-
+						environmentModel.set(idx, env);
 					}
 				}
 			}

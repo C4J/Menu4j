@@ -81,7 +81,6 @@ public class JList4j_dnd<E> extends JList<E> {
             return support.isDataFlavorSupported(DataFlavor.stringFlavor);
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public boolean importData(TransferSupport support) {
             if (!canImport(support)) {
@@ -102,15 +101,18 @@ public class JList4j_dnd<E> extends JList<E> {
 
                 DefaultListModel<E> listModel = (DefaultListModel<E>) model;
 
-                String data = (String) support.getTransferable().getTransferData(DataFlavor.stringFlavor);
-
-                E draggedValue = (E) data; // unchecked cast, but safe for Strings or simple types
+                if (draggedIndex < 0 || draggedIndex >= listModel.getSize() || dropIndex < 0) {
+                    // Not a drag which started in this list
+                    return false;
+                }
 
                 if (dropIndex > draggedIndex) {
                     dropIndex--;
                 }
 
-                listModel.remove(draggedIndex);
+                // Move the element itself - the transferred String is only a
+                // text copy and must not be put back into the model.
+                E draggedValue = listModel.remove(draggedIndex);
                 listModel.add(dropIndex, draggedValue);
 
                 setSelectedIndex(dropIndex);
@@ -120,6 +122,11 @@ public class JList4j_dnd<E> extends JList<E> {
                 e.printStackTrace();
             }
             return false;
+        }
+
+        @Override
+        protected void exportDone(JComponent source, Transferable data, int action) {
+            draggedIndex = -1;
         }
     }
 }
