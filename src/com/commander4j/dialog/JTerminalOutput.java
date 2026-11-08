@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,6 +19,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
@@ -67,6 +73,52 @@ public class JTerminalOutput extends JFrame
 	private JTextField4j inputText = new JTextField4j();
 	Process process;
 	int result = -1;
+
+	/* ---------------- Open-window registry (used by the main window's Minimise / Restore buttons) ---------------- */
+
+	/** Every JTerminalOutput that has been constructed and not yet disposed. */
+	private static final Set<JTerminalOutput> openTerminals = new CopyOnWriteArraySet<JTerminalOutput>();
+
+	/**
+	 * Windows iconified by {@link #minimiseAll()} together with the extended state they had beforehand.
+	 * Only these are touched by {@link #restoreAll()}; a window the user minimised by hand is left alone.
+	 * Accumulates across repeated Minimise presses so nothing gets orphaned in the Dock / taskbar.
+	 */
+	private static final Map<JTerminalOutput, Integer> minimisedByButton = new LinkedHashMap<JTerminalOutput, Integer>();
+
+	/** Iconify every visible, non-iconified terminal window and remember its state for {@link #restoreAll()}. */
+	public static void minimiseAll()
+	{
+		synchronized (minimisedByButton)
+		{
+			for (JTerminalOutput t : openTerminals)
+			{
+				if (t.isDisplayable() && t.isVisible() && (t.getExtendedState() & JFrame.ICONIFIED) == 0)
+				{
+					minimisedByButton.put(t, t.getExtendedState());
+					t.setExtendedState(JFrame.ICONIFIED);
+				}
+			}
+		}
+	}
+
+	/** Put back every terminal window that {@link #minimiseAll()} iconified and still exists. */
+	public static void restoreAll()
+	{
+		synchronized (minimisedByButton)
+		{
+			for (Map.Entry<JTerminalOutput, Integer> e : minimisedByButton.entrySet())
+			{
+				JTerminalOutput t = e.getKey();
+				if (t.isDisplayable())
+				{
+					t.setExtendedState(e.getValue().intValue());
+					t.toFront();
+				}
+			}
+			minimisedByButton.clear();
+		}
+	}
 
 	public JTerminalOutput()
 	{
@@ -191,6 +243,22 @@ public class JTerminalOutput extends JFrame
 
 		setBounds(screenBounds.x + ((screenBounds.width - JTerminalOutput.this.getWidth()) / 2), screenBounds.y + ((screenBounds.height - JTerminalOutput.this.getHeight()) / 2), JTerminalOutput.this.getWidth() + widthadjustment,
 				JTerminalOutput.this.getHeight() + heightadjustment);
+
+		// Both the Close button and the title-bar close go through dispose(), which fires windowClosed.
+		openTerminals.add(this);
+		addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowClosed(WindowEvent e)
+			{
+				openTerminals.remove(JTerminalOutput.this);
+				synchronized (minimisedByButton)
+				{
+					minimisedByButton.remove(JTerminalOutput.this);
+				}
+			}
+		});
+
 		setVisible(true);
 
 	}

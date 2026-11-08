@@ -131,6 +131,8 @@ public class Common {
 	public final static ImageIcon icon_expandNode = new ImageIcon(iconPath+"/expandnode.gif");
 	public final static ImageIcon icon_collapseAll = new ImageIcon(iconPath+"/collapseall.gif");
 	public final static ImageIcon icon_collapeNode = new ImageIcon(iconPath+"/collapsenode.gif");
+	public final static ImageIcon icon_minimizeTerminals = new ImageIcon(iconPath+"/minimize_24x24.png");
+	public final static ImageIcon icon_restoreTerminals = new ImageIcon(iconPath+"/restore_24x24.png");
 	public final static ImageIcon icon_execute = new ImageIcon(iconPath+"/execute_24x24.png");
 	public final static ImageIcon icon_settings = new ImageIcon(iconPath+"/settings_24x24.png");
 	public final static ImageIcon icon_reload = new ImageIcon(iconPath+"/refresh_24x24.png");

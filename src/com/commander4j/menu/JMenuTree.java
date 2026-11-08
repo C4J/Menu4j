@@ -50,6 +50,7 @@ import com.commander4j.dialog.JDialogLeaf;
 import com.commander4j.dialog.JDialogLicenses;
 import com.commander4j.dialog.JDialogPassword;
 import com.commander4j.dialog.JDialogSettings;
+import com.commander4j.dialog.JTerminalOutput;
 import com.commander4j.dnd.TreeTransferHandler;
 import com.commander4j.gui.JButton4j;
 import com.commander4j.gui.JList4j;
@@ -76,7 +77,7 @@ public class JMenuTree extends JFrame
 	Image trayIconImage;
 	Utility utils = new Utility();
 
-	public static String version = "2.11";
+	public static String version = "2.12";
 
 	/**
 	 * Launch the application.
@@ -301,6 +302,32 @@ public class JMenuTree extends JFrame
 				execute();
 			}
 		});
+
+		JButton4j btnMinimiseTerminals = new JButton4j(Common.icon_minimizeTerminals);
+		btnMinimiseTerminals.setToolTipText("Minimise all open terminal windows");
+		btnMinimiseTerminals.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				JTerminalOutput.minimiseAll();
+			}
+		});
+		btnMinimiseTerminals.setPreferredSize(new Dimension(32, 32));
+		btnMinimiseTerminals.setFocusable(false);
+		toolBarSide.add(btnMinimiseTerminals);
+
+		JButton4j btnRestoreTerminals = new JButton4j(Common.icon_restoreTerminals);
+		btnRestoreTerminals.setToolTipText("Restore the terminal windows minimised by the Minimise button");
+		btnRestoreTerminals.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				JTerminalOutput.restoreAll();
+			}
+		});
+		btnRestoreTerminals.setPreferredSize(new Dimension(32, 32));
+		btnRestoreTerminals.setFocusable(false);
+		toolBarSide.add(btnRestoreTerminals);
 
 		JButton4j btnSettings = new JButton4j(Common.icon_settings);
 		btnSettings.setToolTipText("Settings");
